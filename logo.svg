@@ -3,7 +3,7 @@
 <svg width="100%" height="100%" viewBox="0 0 1000 1000" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
     <g transform="matrix(1,0,0,1,0,-653)">
         <g id="Artboard2" transform="matrix(1.61554,0,0,1.61554,0,-402.648)">
-            <rect x="0" y="653.436" width="618.99" height="618.99" style="fill:white;"/>
+            <rect x="0" y="653.436" width="618.99" height="618.99" style="fill:none;"/>
             <g transform="matrix(0.927436,0,0,0.927436,-69.6074,825.029)">
                 <g transform="matrix(1.02655,0,0,1,3.7902,-1.71944)">
                     <path d="M555.233,12.039C555.233,8.154 552.16,5 548.376,5L240.662,5C236.877,5 233.805,8.154 233.805,12.039L202.595,170.961C202.595,174.846 205.667,178 209.452,178L579.548,177.459C583.333,177.459 586.405,174.305 586.405,170.42L555.233,12.039Z" style="fill:rgb(83,203,255);"/>
