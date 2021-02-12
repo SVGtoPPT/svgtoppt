@@ -19,14 +19,18 @@ If you would like native support for SVG files and other vector formats in Keyno
 ## Prerequisites
 
 - [Alfred Powerpack](https://www.alfredapp.com/shop/)
-- [Keynote](https://apps.apple.com/us/app/keynote/id409183694) (tested with `10.3.9`)
-- [Libre Office](https://www.libreoffice.org/download/download/) (tested with `7.0.4.2`)
+  - Current prices: £29 for single license / £49 for mega supporter (free lifetime upgrades)
+  - Primarily tested with `4.3.1`
+- [Keynote](https://apps.apple.com/us/app/keynote/id409183694)
+  - Primarily tested with `10.3.9`
+- [Libre Office](https://www.libreoffice.org/download/download/)
+  - Primarily tested with `7.0.4.2`
   - Workflow contains automated installation 🙂
 
 ## Getting Started
 
 1. If you haven't yet, download & install Alfred with the button on [their homepage](https://www.alfredapp.com/)
-2. Download the [Alfred workflow file](https://github.com/blakegearin/svg-to-keynote/raw/main/svg-to-keynote.alfredworkflow) (`svgtokeynote.alfredworkflow`) for SVG to Keynote
+2. Download the [Alfred workflow file](https://github.com/blakegearin/svg-to-keynote/raw/main/svg-to-keynote.alfredworkflow) (`svg-to-keynote.alfredworkflow`) for SVG to Keynote
 
 ## Install
 
@@ -47,6 +51,13 @@ If you would like native support for SVG files and other vector formats in Keyno
 5. When Keynote opens the workflow is finished
 6. Select all vectors `Ctrl` + `A`
 7. Copy (`Ctrl` + `C`) and paste (`Ctrl` + `V`) shapes to other Keynote presentations
+
+## Known Issues
+
+| Issue                                                                                                              | Resolution                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Background rectangle displays fine in Libre Office but when opening the PPT file in Keynote the rectangle is small | Resize rectangle or use Keynote's [native background color](https://support.apple.com/en-us/HT211077) feature on your slides |
+| Fonts don't transfer well from SVG to PPT to Keynote                                                               | Convert text to curves/outlines/paths when exporting your SVG                                                                |
 
 ## Manual Installation/Customization
 
@@ -86,13 +97,6 @@ If you would like native support for SVG files and other vector formats in Keyno
    - `Ctrl` + `Z` for Align Centered (Center Horizontally)
    - `Ctrl` + `X` for Align Middle (Center Vertically)
    - `Ctrl` + `B` for Break
-
-## Known Issues
-
-| Issue                                                                                                              | Resolution                                                                                                                   |
-| ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| Background rectangle displays fine in Libre Office but when opening the PPT file in Keynote the rectangle is small | Resize rectangle or use Keynote's [native background color](https://support.apple.com/en-us/HT211077) feature on your slides |
-| Fonts don't transfer well from SVG to PPT to Keynote                                                               | Convert text to curves/outlines/paths when exporting your SVG                                                                |
 
 ## Credits
 
