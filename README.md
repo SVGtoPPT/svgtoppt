@@ -94,6 +94,7 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 ### Credits
 
-- Font in logo: [Morro by Great Scott](https://www.greatscott.se/fonts/morro)
 - Publisher of this process: Kyle Ledbetter ([Twitter](https://twitter.com/kyleledbetter), [Website](https://kyleledbetter.com/))
-- Libre Office
+- PPT support: [The Document Foundation](https://www.documentfoundation.org/) and [Libre Office contributors](https://www.libreoffice.org/community/community-map/)
+- Alfred development: [Running with Crayons Ltd](http://runningwithcrayons.net/), founded by [Andrew Pepperrell](https://twitter.com/preppeller) and [Vero Pepperrell](https://twitter.com/vero)
+- Font in logo: [Morro by Great Scott](https://www.greatscott.se/fonts/morro)
