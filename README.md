@@ -45,12 +45,12 @@ If you would like native support for SVG files and other vector formats in Keyno
 1. Double-click the workflow file to open it in Alfred
 2. Edit the workflow environment variables if you'd like, then select Import
 
-| Variable Name     | Default Value                 | Description                             |
-| ----------------- | ----------------------------- | --------------------------------------- |
-| output_directory  | ~/svg-to-keynote/Output       | Where the resultant PPT files are saved |
-| template_ppt_path | ~/svg-to-keynote/template.ppt | File path to the template PPT           |
+    | Variable Name     | Default Value                 | Description                             |
+    | ----------------- | ----------------------------- | --------------------------------------- |
+    | output_directory  | ~/svg-to-keynote/Output       | Where the resultant PPT files are saved |
+    | template_ppt_path | ~/svg-to-keynote/template.ppt | File path to the template PPT           |
 
-1. If you haven't yet, install your preferred version of Libre Office from [their homepage](https://www.libreoffice.org/download/download/) **OR** using Homebrew
+3. If you haven't yet, install your preferred version of Libre Office from [their homepage](https://www.libreoffice.org/download/download/) **OR** using Homebrew
 
     ```bash
     # Install Homebrew if you haven't already
@@ -61,7 +61,7 @@ If you would like native support for SVG files and other vector formats in Keyno
     brew install libreoffice@7.1.0
     ```
 
-2. Retrieve the blank PPT file from GitHub and move it to align with `template_ppt_path` as necessary:
+4. Retrieve the blank PPT file from GitHub and move it to align with `template_ppt_path` as necessary:
 
     ```bash
     # Install wget if you haven't already
@@ -71,7 +71,7 @@ If you would like native support for SVG files and other vector formats in Keyno
     wget https://github.com/blakegearin/svg-to-keynote/raw/main/template.ppt
     ```
 
-3. Feel free to open `template.ppt` and edit it to your liking; it's a 4K (53.33" x 30.00") blank presentation
+5. Feel free to open `template.ppt` and edit it to your liking; it's a 4K (53.33" x 30.00") blank presentation
 
 ## Usage
 
@@ -87,10 +87,10 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 ### Known Issues
 
-|Issue|Resolution|
-|-|-|
-|Background rectangle displays fine in Libre Office but when opening the PPT file in Keynote the rectangle is small|Resize rectangle or use Keynote's [native background color](https://support.apple.com/en-us/HT211077) feature on your slides|
-|Fonts don't transfer well from SVG to PPT to Keynote|Convert text to curves/outlines/paths when exporting your SVG|
+| Issue                                                                                                              | Resolution                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Background rectangle displays fine in Libre Office but when opening the PPT file in Keynote the rectangle is small | Resize rectangle or use Keynote's [native background color](https://support.apple.com/en-us/HT211077) feature on your slides |
+| Fonts don't transfer well from SVG to PPT to Keynote                                                               | Convert text to curves/outlines/paths when exporting your SVG                                                                |
 
 ### Credits
 
