@@ -4,8 +4,6 @@
 
 # SVG to Keynote
 
-## About
-
 A [scalable vector graphic](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) (SVG) is an image format that enables infinite scaling without pixelation, unlike [raster graphic formats](https://en.wikipedia.org/wiki/Raster_graphics) like JPEG and PNG.
 
 In 2005, David Astling published a [script](http://mcb.berkeley.edu/labs/zusman/dave/svg2key/) that could convert SVG files to Keynote shapes. This application doesn't run on newer versions of macOS (likely due to being 32-bit) and is no longer supported.
@@ -97,6 +95,11 @@ If you would like native support for SVG files and other vector formats in Keyno
   - `Ctrl` + `Z` for Align Centered (Center Horizontally)
   - `Ctrl` + `X` for Align Middle (Center Vertically)
   - `Ctrl` + `B` for Break
+
+- Uninstall options
+  - Libre Office hotkeys: `svg uninstall hotkeys`
+  - Application directory and all contents inside: `svg uninstall basics`
+  - Libre Office, application directory, and all contents inside: `svg uninstall complete`
 
 ## Credits
 
