@@ -4,7 +4,7 @@
 
 # SVG to Keynote
 
-A [scalable vector graphic](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) (SVG) is an image format that enables infinite scaling without pixelation, unlike [raster graphic formats](https://en.wikipedia.org/wiki/Raster_graphics) like JPEG and PNG.
+A [scalable vector graphic](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) (SVG) is an image format that enables infinite scaling without pixelation, unlike [raster graphic formats](https://en.wikipedia.org/wiki/Raster_graphics) like JPEG and PNG. Keynote doesn't support SVG files natively, though they have "shapes" that are vectors.
 
 In 2005, David Astling published a [script](http://mcb.berkeley.edu/labs/zusman/dave/svg2key/) that could convert SVG files to Keynote shapes. This application doesn't run on newer versions of macOS (likely due to being 32-bit) and is no longer supported.
 
@@ -54,8 +54,9 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 | Issue                                                                                                              | Resolution                                                                                                                   |
 | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| Background rectangle displays fine in Libre Office but when opening the PPT file in Keynote the rectangle is small | Resize rectangle or use Keynote's [native background color](https://support.apple.com/en-us/HT211077) feature on your slides |
 | Fonts don't transfer well from SVG to PPT to Keynote                                                               | Convert text to curves/outlines/paths when exporting your SVG                                                                |
+|Gradients displays fine in Libre Office but when opening the PPT file in Keynote it's gone|Recreate the gradient with Keynote's [native gradient fill](https://support.apple.com/en-us/HT210063) or save your content as a PDF file and drag & drop into Keynote to retain your original gradient|
+| Background rectangle displays fine in Libre Office but when opening the PPT file in Keynote the rectangle is small | Resize rectangle or use Keynote's [native background color](https://support.apple.com/en-us/HT211077) on your slides |
 
 ## Manual Installation/Customization
 
