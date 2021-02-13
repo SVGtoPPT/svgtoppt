@@ -24,7 +24,7 @@ If you would like native support for SVG files and other vector formats in Keyno
 - [Keynote](https://apps.apple.com/us/app/keynote/id409183694)
   - Primarily tested with `10.3.9`
 - [Libre Office](https://www.libreoffice.org/download/download/)
-  - Primarily tested with `7.0.4.2`
+  - Primarily tested with `7.0.4.2` and `7.1.0`
   - Workflow contains automated installation 🙂
 
 ## Getting Started
@@ -40,7 +40,7 @@ If you would like native support for SVG files and other vector formats in Keyno
 
    - **No:** Install Libre Office and the basics: `svg install complete`
 
-   - **Yes:** Install just the basics: `svg install basic`
+   - **Yes:** Install just the application basics: `svg install basics`
 
 ## Usage
 
@@ -63,10 +63,11 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 - Edit the workflow environment variables if you'd like
 
-    | Variable Name     | Default Value                 | Description                             |
-    | ----------------- | ----------------------------- | --------------------------------------- |
-    | output_directory  | ~/svg-to-keynote/Output       | Where the resultant PPT files are saved |
-    | template_ppt_path | ~/svg-to-keynote/template.ppt | File path to the template PPT           |
+    | Variable Name         | Default Value                 | Description                                           |
+    | --------------------- | ----------------------------- | ----------------------------------------------------- |
+    | application_directory | ~/svg-to-keynote              | Default location of output directory and template PPT |
+    | output_directory      | ~/svg-to-keynote/Output       | Where the resultant PPT files are saved               |
+    | template_ppt_path     | ~/svg-to-keynote/template.ppt | File path to the template PPT                         |
 
 - DIY Libre Office installation by going to [their homepage](https://www.libreoffice.org/download/download/) **OR** using Homebrew
 
@@ -75,11 +76,10 @@ If you would like native support for SVG files and other vector formats in Keyno
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
     # Install Libre Office with Homebrew
-    brew install libreoffice@7.0.4
-    brew install libreoffice@7.1.0
+    brew install libreoffice
     ```
 
-- Retrieve the `template.ppt` from GitHub; make sure it lines up with the `template_ppt_path` environment variable
+- Retrieve the `template.ppt` from GitHub; make sure its location matches the `template_ppt_path` environment variable
 
     ```bash
     # Install wget if you haven't already
@@ -93,10 +93,10 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 - The workflow uses custom hotkeys to complete most of the Libre Office steps, listed below in order of usage; you can set these manually in Libre Office (Tools > Customize > Keyboard) **OR** use the workflow `svg install hotkeys` which updates the `~/Library/Application\ Support/LibreOffice/4/user/registrymodifications.xcu` configuration file
 
-   - `Ctrl` + `I` for Insert Image
-   - `Ctrl` + `Z` for Align Centered (Center Horizontally)
-   - `Ctrl` + `X` for Align Middle (Center Vertically)
-   - `Ctrl` + `B` for Break
+  - `Ctrl` + `I` for Insert Image
+  - `Ctrl` + `Z` for Align Centered (Center Horizontally)
+  - `Ctrl` + `X` for Align Middle (Center Vertically)
+  - `Ctrl` + `B` for Break
 
 ## Credits
 
