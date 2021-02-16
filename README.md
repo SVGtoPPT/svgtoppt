@@ -1,5 +1,5 @@
 <p align="center">
-  <img id="logo" src="logo.svg" class="center" alt="SVG to Keynote logo" title="SVG to Keynote logo" />
+  <img id="logo" src="logo.svg" class="center" alt="SVG to Keynote logo" title="SVG to Keynote logo" width="500" height="500"/>
 </p>
 
 # SVG to Keynote
