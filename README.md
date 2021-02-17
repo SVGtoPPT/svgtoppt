@@ -31,12 +31,16 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 <div align="center">
   <span style="display: inline-block; width: 250px;">
-    <a href="md/cli.md">CLI</a>
-    <img id="alfred-logo" src="img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon" width="250" height="250"/>
+    <a href="md/cli.md">
+      CLI
+      <img id="alfred-logo" src="img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon" width="250" height="250"/>
+    </a>
   </span>
   <span style="display: inline-block; width: 250px;">
-    <a href="md/alfred.md">Alfred</a>
-    <img id="alfred-logo" src="img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon" width="250" height="250"/>
+    <a href="md/alfred.md">
+      Alfred
+      <img id="alfred-logo" src="img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon" width="250" height="250"/>
+    </a>
   </span>
 </div>
 
