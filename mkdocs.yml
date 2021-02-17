@@ -1,0 +1,46 @@
+# Project information
+site_name: 'SVG to PPT'
+site_description: 'Official website '
+site_url: 'https://blakegearin.github.io/svg-to-ppt'
+
+# Repository
+repo_name: 'Repo'
+repo_url: 'https://github.com/blakegearin/svg-to-ppt'
+
+
+# Configuration
+theme:
+  name: 'material'
+  custom_dir: 'theme'
+  logo: 'img/svg-to-ppt-logo.svg'
+  favicon: 'img/svg-to-ppt-logo.svg'
+  feature:
+    tabs: false
+  language: 'en'
+  palette:
+    primary: 'blue'
+    accent: 'green'
+  font:
+    text: 'Roboto'
+    code: 'Roboto Mono'
+
+extra:
+  search:
+    tokenizer: '[\s\-\.]+'
+
+markdown_extensions:
+- admonition
+- footnotes
+- pymdownx.superfences
+- pymdownx.details
+- toc:
+    permalink: true
+- markdown_include.include:
+    base_path: docs
+- codehilite:
+    linenums: false
+- pymdownx.emoji:
+    emoji_generator: !!python/name:pymdownx.emoji.to_svg
+    options:
+      attributes:
+        width: 25px
