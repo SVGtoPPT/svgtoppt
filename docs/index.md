@@ -1,5 +1,5 @@
 <p align="center">
-  <img id="logo" src="../img/svg-to-ppt-logo.svg" class="center" alt="SVG to PPT logo" title="SVG to PPT logo" width="500" height="500"/>
+  <img id="logo" src="img/svg-to-ppt-logo.svg" class="center" alt="SVG to PPT logo" title="SVG to PPT logo" width="500" height="500"/>
 </p>
 
 # SVG to PPT
@@ -38,7 +38,7 @@ If you would like native support for SVG files and other vector formats in Keyno
       </p>
       <p align="center">
         <a href="md/cli.md">
-          <img id="alfred-logo" src="../img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon" width="250" height="250"/>
+          <img id="alfred-logo" src="img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon" width="250" height="250"/>
         </a>
       </p>
     </th>
@@ -49,7 +49,7 @@ If you would like native support for SVG files and other vector formats in Keyno
       </p>
       <p align="center">
         <a href="md/alfred.md">
-          <img id="alfred-logo" src="../img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon" width="250" height="250"/>
+          <img id="alfred-logo" src="img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon" width="250" height="250"/>
         </a>
       </p>
     </th>
