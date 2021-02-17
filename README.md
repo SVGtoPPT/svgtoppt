@@ -31,22 +31,29 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 <table>
   <thead>
-    <th align="center">
-    <img width="441" height="1">
-      <p align="center">CLI</p>
+    <th>
+    <img width="1000" height="1">
+      <p align="center">
+        <a href="md/cli.md">CLI</a>
+      </p>
     </th>
-    <th align="center">
-      <img width="441" height="1">
-      <p align="center">Alfred</p>
+    <th>
+      <img width="1000" height="1">
+      <p align="center">
+        <a href="md/alfred.md">Alfred</a>
+      </p>
     </th>
   </thead>
-
   <tr>
     <td align="center">
-      <img id="alfred-logo" src="img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon" width="250" height="250"/>
+      <a href="md/cli.md">
+        <img id="alfred-logo" src="img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon" width="250" height="250"/>
+      </a>
     </td>
     <td align="center">
-      <img id="alfred-logo" src="img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon" width="250" height="250"/>
+      <a href="md/alfred.md">
+        <img id="alfred-logo" src="img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon" width="250" height="250"/>
+        </a>
     </td>
   </tr>
 </table>
