@@ -3,12 +3,13 @@
 input_svg=$1
 
 # Set defaults
-application_directory=~/svg-to-keynote
-output_directory=~/svg-to-keynote/Output
-template_ppt_filepath=~/svg-to-keynote/template.ppt
-libre_office_input_filepath=$application_directory/.input
+application_name=svg-to-ppt
+application_directory=~/$application_name
+output_directory=$application_directory/Output
+template_ppt_filepath=$application_directory/template.ppt
+libre_office_input_filepath=~/.$application_name
 force_ppt=false
-keynote_open=true
+where_to_open=keynote
 
 # Helpful strings
 svg_file_ext=.svg
@@ -16,17 +17,17 @@ ppt_file_ext=.ppt
 file_uri_prefix=file://
 
 # Check for flags overwriting defaults
-while getopts a:f:i:k:o:p:t: option
+while getopts a:f:i:o:p:t:w: option
 do
   case "${option}"
   in
     a) application_directory=${OPTARG};;
     f) force_ppt=${OPTARG};;
     i) input_svg=${OPTARG};;
-    k) keynote_open=${OPTARG};;
     o) output_directory=${OPTARG};;
     p) ppt_name=${OPTARG};;
-    t) input_template_ppt=${OPTARG};;
+    t) template_ppt=${OPTARG};;
+    w) where_to_open=${OPTARG};;
   esac
 done
 
@@ -47,29 +48,41 @@ else
 fi
 
 # If template PPT passed in, check if it exists
-if [ ! -z $input_template_ppt ]; then
-  if test -f $PWD/$input_template_ppt; then
-    template_ppt_filepath=$PWD/$input_template_ppt
-  elif test -f $input_template_ppt; then
-    template_ppt_filepath=$input_template_ppt
+if [ ! -z $template_ppt ]; then
+  if test -f $PWD/$template_ppt; then
+    template_ppt_filepath=$PWD/$template_ppt
+  elif test -f $template_ppt; then
+    template_ppt_filepath=$template_ppt
   else
-    echo "Input error: Can't find template PPT file $input_template_ppt"
+    echo "Input error: Can't find template PPT file $template_ppt"
     exit 2
   fi
 fi
 
-# Ensure force_ppt has true or false value
+# Validate force_ppt for true or false
 if [ "$force_ppt" != true ] && [ "$force_ppt" != false ]; then
-  echo "Input error: Force PPT flag (-f) should only be set to true or false"
+  echo "Input error: force_ppt flag (-f) should only be set to true or false"
   exit 2
 fi
 
-# Set flag-dependent defaults
-## SVG-related
+# Validate where_to_open for valid option
+case $where_to_open in
+  none)     where_to_open=;;
+  keynote)  where_to_open=Keynote;;
+  power)    where_to_open="Microsoft PowerPoint";;
+  libre)    where_to_open=LibreOffice;;
+  oo)       where_to_open=OpenOffice;;
+  *)
+    echo "Input error: where_to_open flag (-w) should only be set to: none, keynote, power, libre, oo"
+    exit 2
+    ;;
+esac
+
+# Set SVG flag-dependent defaults
 svg_name_with_ext=${input_svg##*/}
 IFS='.' read -r svg_name string <<< "$svg_name_with_ext"
 
-## PPT-related
+# Set PPT flag-dependent defaults
 if [ -z $ppt_name ]; then
   ppt_name=$svg_name
 fi
@@ -94,12 +107,14 @@ fi
 # Write filepath of SVG and PPT to input file for Libre Office to read
 printf "$file_uri_prefix$svg_filepath\n$file_uri_prefix$ppt_filepath\n" > $libre_office_input_filepath
 
-# Launch the template PPT with Libre Office and kick off macro
-/Applications/LibreOffice.app/Contents/MacOS/soffice --invisible --headless $template_ppt_filepath "vnd.sun.star.script:Standard.SVGtoKeynote.Main?language=Basic&location=application"
+# # Launch the template PPT with Libre Office and kick off macro
+# /Applications/LibreOffice.app/Contents/MacOS/soffice --invisible --headless $template_ppt_filepath "vnd.sun.star.script:Standard.SVGtoPPT.Main?language=Basic&location=application"
 
-# Launch the new PPT file with Keynote
-open -a Keynote $ppt_filepath
-
+# Launch the new PPT file if where_to_open is defined
+if [ -z $ppt_name_suffix ]; then
+  # open -a $where_to_open $ppt_filepath
+  echo "open -a '$where_to_open' $ppt_filepath"
+fi
 
 
 printf "# DEFAULTS\n"
@@ -119,14 +134,14 @@ c=(
 )
 for i in "${c[@]}"; do echo "$i : ${!i}"; done
 
-printf "\n# PPT/KEYNOTE\n"
+printf "\n# PPT\n"
 c=(
   template_ppt_filepath
   ppt_name
   ppt_name_suffix
   ppt_filepath
   force_ppt
-  keynote_open
+  where_to_open
 )
 for i in "${c[@]}"; do echo "$i : ${!i}"; done
 

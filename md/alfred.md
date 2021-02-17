@@ -1,4 +1,4 @@
-# SVG to Keynote with Alfred
+# SVG to PPT with Alfred
 
 ## Prerequisites
 
