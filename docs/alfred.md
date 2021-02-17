@@ -1,10 +1,10 @@
-# SVG to PPT with Alfred
+# Alfred
 
 ## Prerequisites
 
 - [Alfred Powerpack](https://www.alfredapp.com/shop/)
-  - Current prices: £29 for single license / £49 for mega supporter (free lifetime upgrades)
-  - Primarily tested with `4.3.1`
+    - Current prices: £29 for single license / £49 for mega supporter (free lifetime upgrades)
+    - Primarily tested with `4.3.1`
 
 ## Getting Started
 

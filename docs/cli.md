@@ -1,4 +1,4 @@
-# SVG to PPT from the Command Line
+# CLI
 
 ## Getting Started
 

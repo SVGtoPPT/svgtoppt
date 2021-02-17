@@ -1,8 +1,8 @@
 <p align="center">
-  <img id="logo" src="img/svg-to-ppt-logo.svg" class="center" alt="SVG to PPT logo" title="SVG to PPT logo" width="500" height="500"/>
+  <img src="img/svg-to-ppt-logo.svg" class="center" alt="SVG to PPT logo" title="SVG to PPT logo" width="500" height="500"/>
 </p>
 
-# SVG to PPT
+# Home
 
 A [scalable vector graphic](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics) (SVG) is an image format that enables infinite scaling without pixelation, unlike [raster graphic formats](https://en.wikipedia.org/wiki/Raster_graphics) like JPEG and PNG. Apple Keynote and Microsoft PowerPoint don't support SVG files natively, though they have "shapes" that are vectors.
 
@@ -18,8 +18,8 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 - [macOS](https://www.apple.com/macos), primarily tested with `10.15.7`
 - [Libre Office](https://www.libreoffice.org/download/download/)
-  - Primarily tested with `7.0.4.2` and `7.1.0`
-  - Automated installation for `7.1.0` included 🙂
+    - Primarily tested with `7.0.4.2` and `7.1.0`
+    - Automated installation for `7.1.0` included 🙂
 
 ## Works With
 
@@ -29,32 +29,27 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 ## Flavors
 
-<table>
-  <thead>
-    <th>
-    <img width="1000" height="1">
-      <p align="center">
-        <a href="cli.md">CLI</a>
-      </p>
-      <p align="center">
-        <a href="md/cli.md">
-          <img id="alfred-logo" src="img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon" width="250" height="250"/>
-        </a>
-      </p>
-    </th>
-    <th>
-      <img width="1000" height="1">
-      <p align="center">
-        <a href="alfred.md">Alfred</a>
-      </p>
-      <p align="center">
-        <a href="md/alfred.md">
-          <img id="alfred-logo" src="img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon" width="250" height="250"/>
-        </a>
-      </p>
-    </th>
-  </thead>
-</table>
+<div id="flavors" align="center">
+  <span style="display: inline-block; width: 250px;">
+    <a href="md/cli.md">
+      CLI
+      <img id="alfred-logo" src="img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon"/>
+    </a>
+  </span>
+  <span style="display: inline-block; width: 250px;">
+    <a href="md/alfred.md">
+      Alfred
+      <img id="alfred-logo" src="img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon"/>
+    </a>
+  </span>
+</div>
+
+<style>
+  #flavors img {
+    width: 300px;
+    height: 300px;
+  }
+</style>
 
 ## Known Issues
 
