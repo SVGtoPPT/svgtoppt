@@ -5,9 +5,14 @@ site_url: 'https://blakegearin.github.io/svg-to-ppt'
 
 # Repository
 repo_name: blakegearin/svg-to-ppt
-repo_url: 'https://github.com/blakegearin/svg-to-ppt'
+repo_url: https://github.com/blakegearin/svg-to-ppt
+edit_uri: ''
 
-copyright: Copyright © Blake Gearin
+nav:
+  - Home: index.md
+  - CLI: cli.md
+  - Alfred: alfred.md
+
 extra:
   search:
     tokenizer: '[\s\-\.]+'
@@ -17,33 +22,28 @@ extra:
     - icon: fontawesome/solid/home
       link: https://blakegearin.com
 
-nav:
-  - Home: index.md
-  - CLI: cli.md
-  - Alfred: alfred.md
-
 # Configuration
 theme:
   name: 'material'
   custom_dir: 'theme'
-  logo: 'img/svg-to-ppt-icon.svg'
+  logo: 'img/svg-to-ppt-icon-transparent.svg'
   favicon: 'img/svg-to-ppt-icon.svg'
   icon:
     repo: fontawesome/brands/github
   features:
+    - navigation.instant
     - navigation.tabs
   language: 'en'
-  palette:
-    primary: deep purple
-    accent: indigo
   font:
     text: 'Ubuntu'
     code: 'Roboto Mono'
   static_templates:
     - 404.html
 
+extra_css:
+  - stylesheets/colors.css
+
 markdown_extensions:
-- meta
 - admonition
 - footnotes
 - pymdownx.superfences

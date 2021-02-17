@@ -31,13 +31,13 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 <div id="flavors" align="center">
   <span style="display: inline-block; width: 250px;">
-    <a href="md/cli.md">
+    <a href="/cli">
       CLI
       <img id="alfred-logo" src="img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon"/>
     </a>
   </span>
   <span style="display: inline-block; width: 250px;">
-    <a href="md/alfred.md">
+    <a href="/alfred">
       Alfred
       <img id="alfred-logo" src="img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon"/>
     </a>
@@ -63,5 +63,6 @@ If you would like native support for SVG files and other vector formats in Keyno
 
 - Publisher of the conversion process: Kyle Ledbetter ([Twitter](https://twitter.com/kyleledbetter), [Website](https://kyleledbetter.com/))
 - Libre Office support: [The Document Foundation](https://www.documentfoundation.org/) and [Libre Office contributors](https://www.libreoffice.org/community/community-map/)
-- Font in logo: [Morro by Great Scott](https://www.greatscott.se/fonts/morro)
+- Website theme: [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/)
+- Font in branding: [Morro by Great Scott](https://www.greatscott.se/fonts/morro)
 - Alfred developers: [Running with Crayons Ltd](http://runningwithcrayons.net/), founded by [Andrew Pepperrell](https://twitter.com/preppeller) and [Vero Pepperrell](https://twitter.com/vero)

@@ -9,9 +9,9 @@
 ## Getting Started
 
 1. If you haven't yet, download & install Alfred with the button on [their homepage](https://www.alfredapp.com/)
-2. Download the [Alfred workflow file](https://github.com/blakegearin/svg-to-keynote/raw/main/svg-to-keynote.alfredworkflow) (`svg-to-keynote.alfredworkflow`) for SVG to Keynote
+2. Download the [Alfred workflow file](https://github.com/blakegearin/svg-to-ppt/raw/main/src/svg-to-ppt.alfredworkflow) (`svg-to-ppt.alfredworkflow`) for SVG to Keynote
 
-### Install
+## Install
 
 1. Double-click the workflow file  to open it in Alfred, then select Import
 2. Launch Alfred (default is `Cmd` + `Space`)
@@ -21,7 +21,7 @@
 
    - **Yes:** Install just the application basics: `svg install basics`
 
-#### Usage
+## Usage
 
 1. Launch Alfred (default is `Cmd` + `Space`)
 2. Type `svg`, a space, and the name of your SVG file
