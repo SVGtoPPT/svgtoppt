@@ -45,17 +45,15 @@ extra_css:
   - stylesheets/colors.css
 
 markdown_extensions:
-- admonition
-- footnotes
-- pymdownx.superfences
-- pymdownx.details
-- toc:
-    permalink: true
-- codehilite:
-    linenums: false
-- pymdownx.emoji:
-    emoji_index: !!python/name:materialx.emoji.twemoji
-    emoji_generator: !!python/name:materialx.emoji.to_svg
-    options:
-      attributes:
-        width: 25px
+  - admonition
+  - attr_list
+  - footnotes
+  - pymdownx.superfences
+  - pymdownx.details
+  - toc:
+      permalink: true
+  - codehilite:
+      linenums: false
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
