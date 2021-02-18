@@ -1,6 +1,5 @@
+# Uncomment for intense debugging
 # before=$(set -o posix; set | sort);
-
-input_svg=$1
 
 # Set defaults
 application_name=svg-to-ppt
@@ -16,25 +15,56 @@ svg_file_ext=.svg
 ppt_file_ext=.ppt
 file_uri_prefix=file://
 
+# First parameter should be SVG file if no flags are passed
+input_svg=$1
+
 # Check for flags overwriting defaults
-while getopts a:f:i:o:p:t:w: option
+# while getopts "a:d:f:i:o:p:t:w:" option
+# do
+#   case "${option}"
+#   in
+#     a) application_directory=${OPTARG};;
+#     f) force_ppt=${OPTARG};;
+#     i) input_svg=${OPTARG};;
+#     o) output_directory=${OPTARG};;
+#     p) ppt_name=${OPTARG};;
+#     t) template_ppt=${OPTARG};;
+#     w) where_to_open=${OPTARG};;
+#     \?) echo "Hello D";;
+#   esac
+# done
+
+# Check for flags overwriting defaults
+while [[ $# -gt 0 ]] && [[ "$1" == "--"* ]] ;
 do
-  case "${option}"
-  in
-    a) application_directory=${OPTARG};;
-    f) force_ppt=${OPTARG};;
-    i) input_svg=${OPTARG};;
-    o) output_directory=${OPTARG};;
-    p) ppt_name=${OPTARG};;
-    t) template_ppt=${OPTARG};;
-    w) where_to_open=${OPTARG};;
+  opt="$1";
+  shift; #Expose next argument
+  case "$opt" in
+    "--") break 2;;
+    "--a") application_directory="$1"; shift;;
+    "--d") debug=true; shift;;
+    "--f") force_ppt="$1"; shift;;
+    "--i") input_svg="$1"; shift;;
+    "--o") output_directory="$1"; shift;;
+    "--p") ppt_name="$1"; shift;;
+    "--t") template_ppt="$1"; shift;;
+    "--w") where_to_open="$1"; shift;;
   esac
 done
+
+# if options d: option; then
+#   echo 'hello D'
+# fi
 
 # Check if first parameter ends in .svg
 if [[ "$input_svg" != *"$svg_file_ext" ]]; then
   echo "Input error: SVG file not passed in as the first parameter or using the -i flag"
   exit 2
+fi
+
+# Remove file extension from ppt_name if present
+if [[ "$ppt_name" == *"$ppt_file_ext" ]]; then
+  IFS='.' read -r ppt_name string <<< "$ppt_name"
 fi
 
 # Check if SVG file exists
@@ -99,50 +129,53 @@ if [ "$force_ppt" != true ] && [ -f $ppt_filepath ]; then
 
     ppt_filepath=$output_directory/$ppt_name$ppt_name_suffix$ppt_file_ext
   done
-  printf "$ppt_name$ppt_file_ext already exists in $output_directory, so creating $ppt_name$ppt_name_suffix$ppt_file_ext\n"
+  printf "$ppt_name$ppt_file_ext already exists in $output_directory, so creating new file $ppt_name$ppt_name_suffix$ppt_file_ext\n"
 else
-  printf "Going with $ppt_filepath\n\n"
+  printf "Creating new file: $ppt_filepath\n"
 fi
 
 # Write filepath of SVG and PPT to input file for Libre Office to read
 printf "$file_uri_prefix$svg_filepath\n$file_uri_prefix$ppt_filepath\n" > $libre_office_input_filepath
 
-# # Launch the template PPT with Libre Office and kick off macro
-# /Applications/LibreOffice.app/Contents/MacOS/soffice --invisible --headless $template_ppt_filepath "vnd.sun.star.script:Standard.SVGtoPPT.Main?language=Basic&location=application"
+if [ "$debug" != true ]; then
+  # # Launch the template PPT with Libre Office and kick off macro
+  # /Applications/LibreOffice.app/Contents/MacOS/soffice --invisible --headless $template_ppt_filepath "vnd.sun.star.script:Standard.SVGtoPPT.Main?language=Basic&location=application"
 
-# Launch the new PPT file if where_to_open is defined
-if [ -z $ppt_name_suffix ]; then
-  # open -a $where_to_open $ppt_filepath
-  echo "open -a '$where_to_open' $ppt_filepath"
+  # Launch the new PPT file if where_to_open is defined
+  if [ -z $ppt_name_suffix ]; then
+    # open -a $where_to_open $ppt_filepath
+    echo "open -a '$where_to_open' $ppt_filepath"
+  fi
+else
+  printf "\n~DEBUG INITATED~\n\n"
+  printf "# DEFAULTS\n"
+  c=(
+    application_directory
+    output_directory
+    libre_office_input_filepath
+  )
+  for i in "${c[@]}"; do echo "$i : ${!i}"; done
+
+  printf "\n# SVG\n"
+  c=(
+    input_svg
+    svg_name_with_ext
+    svg_name
+    svg_filepath
+  )
+  for i in "${c[@]}"; do echo "$i : ${!i}"; done
+
+  printf "\n# PPT\n"
+  c=(
+    template_ppt_filepath
+    ppt_name
+    ppt_name_suffix
+    ppt_filepath
+    force_ppt
+    where_to_open
+  )
+  for i in "${c[@]}"; do echo "$i : ${!i}"; done
+
+  # Uncomment for intense debugging
+  # comm -13 <(printf %s "$before") <(set -o posix; set | sort | uniq)
 fi
-
-
-printf "# DEFAULTS\n"
-c=(
-  application_directory
-  output_directory
-  libre_office_input_filepath
-)
-for i in "${c[@]}"; do echo "$i : ${!i}"; done
-
-printf "\n# SVG\n"
-c=(
-  input_svg
-  svg_name_with_ext
-  svg_name
-  svg_filepath
-)
-for i in "${c[@]}"; do echo "$i : ${!i}"; done
-
-printf "\n# PPT\n"
-c=(
-  template_ppt_filepath
-  ppt_name
-  ppt_name_suffix
-  ppt_filepath
-  force_ppt
-  where_to_open
-)
-for i in "${c[@]}"; do echo "$i : ${!i}"; done
-
-# comm -13 <(printf %s "$before") <(set -o posix; set | sort | uniq)

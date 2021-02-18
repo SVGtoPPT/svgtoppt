@@ -21,33 +21,81 @@ If you would like native support for SVG files and other vector formats in Keyno
     - Primarily tested with `7.0.4.2` and `7.1.0`
     - Automated installation for `7.1.0` included 🙂
 
-## Works With
-
-- [Apple Keynote](https://apps.apple.com/us/app/keynote/id409183694), primarily tested with `10.3.9`
-- [Microsoft PowerPoint](https://www.microsoft.com/en-us/microsoft-365/powerpoint), primarily tested with `16.46`
-- [Apache OpenOffice](https://www.openoffice.org/), primarily tested with `4.1.8`
-
 ## Flavors
 
 <div id="flavors" align="center">
-  <span style="display: inline-block; width: 250px;">
-    <a href="/cli">
+  <span>
+    <a href="cli">
       CLI
       <img id="alfred-logo" src="img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon"/>
     </a>
   </span>
-  <span style="display: inline-block; width: 250px;">
-    <a href="/alfred">
+  <span>
+    <a href="alfred">
       Alfred
       <img id="alfred-logo" src="img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon"/>
     </a>
   </span>
 </div>
 
+## Works With
+
+<div id="works-with" align="center">
+  <span>
+    <a href="https://apps.apple.com/us/app/keynote/id409183694">
+      Apple<br>Keynote
+    </a>
+    <img id="alfred-logo" src="img/keynote-icon.svg" class="center" alt="Keynote icon" title="Keynote icon"/>
+    <span>Primarily tested with <code>10.3.9</code></span>
+  </span>
+  <span>
+    <a href="https://www.microsoft.com/en-us/microsoft-365/powerpoint">
+      Microsoft<br>PowerPoint
+    </a>
+    <img id="alfred-logo" src="img/powerpoint-icon.svg" class="center" alt="Powerpoint icon" title="Powerpoint icon"/>
+    <span>Primarily tested with <code>16.46</code></span>
+  </span>
+  <span>
+    <a href="https://www.openoffice.org">
+      Apache<br>OpenOffice
+    </a>
+    <img id="alfred-logo" src="img/open-office-icon.svg" class="center" alt="OpenOffice icon" title="OpenOffice icon"/>
+    <span>Primarily tested with <code>4.1.8</code></span>
+  </span>
+</div>
+
 <style>
+  #flavors > span {
+    display: inline-block;
+    width: 200px;
+    margin-bottom: 20px;
+  }
   #flavors img {
-    width: 300px;
-    height: 300px;
+    width: 200px;
+    height: 200px;
+    margin: 10px;
+  }
+
+  #works-with span {
+    display: inline-block;
+  }
+  #works-with > span {
+    width: 150px;
+    margin-bottom: 30px;
+  }
+  #works-with img {
+    width: 150px;
+    height: 150px;
+    margin: 10px;
+  }
+
+  @media only screen and (min-width: 768px) {
+    #flavors > span {
+      margin: 0 50px 0 0;
+    }
+    #works-with > span {
+      margin: 0 50px 0 0;
+    }
   }
 </style>
 

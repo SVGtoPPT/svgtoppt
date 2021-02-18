@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 418 418" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-2904.21,-488.625)">
+        <g id="Open-Office-icon" serif:id="Open Office icon" transform="matrix(1,0,0,1,-91.9394,-330.375)">
+            <rect x="2996.15" y="819" width="417.657" height="417.657" style="fill:none;"/>
+            <g transform="matrix(1.68921,0,0,1.68921,-2281.14,-786.874)">
+                <g id="circle" transform="matrix(0.991069,0,0,0.991069,-1938.26,644.415)">
+                    <path d="M5232.74,332.916C5288.4,332.916 5333.58,378.099 5333.58,433.752C5333.58,489.405 5288.4,534.589 5232.74,534.589C5188.85,534.589 5151.47,506.48 5137.63,467.295L5140.72,459.125L5134.02,454.357C5132.64,447.705 5131.91,440.813 5131.91,433.752C5131.91,378.099 5177.09,332.916 5232.74,332.916Z" style="fill:rgb(0,134,211);"/>
+                </g>
+                <g id="left-bird" serif:id="left bird" transform="matrix(1,0,0,1,-2003.25,644.294)">
+                    <path d="M5156.74,463.243L5153.16,450.421C5154.07,454.807 5155.27,459.088 5156.74,463.243C5187.65,463.202 5210.32,473.383 5226.93,488.92C5270.44,431.938 5331.33,453.83 5325.31,445.797C5319.68,438.292 5264.75,425.117 5223.5,456.043C5200.57,445.905 5177.12,444.015 5153.16,450.421L5156.74,463.243" style="fill:white;"/>
+                </g>
+                <g id="right-bird" serif:id="right bird" transform="matrix(0.578362,0.0513346,-0.0513346,0.578362,270.582,502.04)">
+                    <path d="M5226.93,488.92C5270.44,431.938 5331.33,453.83 5325.31,445.797C5319.68,438.292 5264.75,425.117 5223.5,456.043C5187.46,432.222 5117.19,458.649 5124.36,466.015C5126.68,468.403 5189.78,448.358 5226.93,488.92Z" style="fill:white;"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

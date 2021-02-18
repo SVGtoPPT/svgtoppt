@@ -13,6 +13,7 @@ nav:
   - CLI: cli.md
   - Alfred: alfred.md
 
+copyright: Copyright © 2021 Blake Gearin
 extra:
   search:
     tokenizer: '[\s\-\.]+'
