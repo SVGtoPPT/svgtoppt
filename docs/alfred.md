@@ -2,9 +2,19 @@
 
 ## Prerequisites
 
-- [Alfred Powerpack](https://www.alfredapp.com/shop/)
-    - Current prices: £29 for single license / £49 for mega supporter (free lifetime upgrades)
-    - Primarily tested with `4.3.1`
+<div class="one-icon center">
+  <span>
+    <a target="_blank" href="https://www.alfredapp.com/powerpack">
+      Alfred Powerpack
+      <img src="../img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon"/>
+    </a>
+    <span>Primarily tested with <code>4.3.1</code></span>
+  </span>
+</div>
+
+- Current prices:
+    - £29 for single license
+    - £49 for mega supporter (free lifetime upgrades)
 
 ## Getting Started
 

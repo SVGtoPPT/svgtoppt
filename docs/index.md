@@ -1,121 +1,82 @@
-<p align="center">
-  <img src="img/svg-to-ppt-logo.svg" class="center" alt="SVG to PPT logo" title="SVG to PPT logo" width="500" height="500"/>
-</p>
-
-# Home
-
-Need to move your vectors into Keynote or PowerPoint? Do it quickly with this tool!
+<div class="center">
+  <h1>
+    <img id="app-logo" src="img/svg-to-ppt-logo.svg" alt="SVG to PPT logo" title="SVG to PPT logo"/>
+  </h1>
+  <p id="tagline">
+    Quickly move your vectors into Keynote or PowerPoint
+  </p>
+</div>
 
 ## Features
 
-- Converts your .SVG files to .PPT
-- Runs quickly and works in the background
-- Opens the new PPT file for you when finished
-- Plenty of parameters to fit your needs
-
-### Coming Soon
-
-- Set your preferences to avoid having to use parameters
-- Pass in directory to convert all SVG files inside to PPT
+- [x] Converts your .SVG files to .PPT
+- [x] Works in the background
+- [x] Opens the new PPT file for you when finished
+- [x] Customize how it works to fit your needs
+- [ ] Set preferences to avoid passing parameters (coming soon)
+- [ ] Bulk convert SVG files to PPT (coming soon)
 
 ## Prerequisites
 
-<div class="two-icon" align="center">
+<div class="two-icon center">
   <span>
     <a target="_blank"href="https://www.apple.com/macos">
       macOS
-      <img src="img/mac-os-icon.svg" class="center" alt="macOS icon" title="macOS icon"/>
+      <img src="img/mac-os-icon.svg" alt="macOS icon" title="macOS icon"/>
     </a>
     <span>Primarily tested with <code>10.15.7</code> (Catalina)</span>
   </span>
   <span>
     <a target="_blank"href="https://www.libreoffice.org/download/download">
       Libre Office
-      <img src="img/libre-office-icon.svg" class="center" alt="macOS icon" title="macOS icon"/>
+      <img src="img/libre-office-icon.svg" alt="macOS icon" title="macOS icon"/>
     </a>
     <span>Primarily tested with <code>7.0.4.2</code> and <code>7.1.0</code></span>
   </span>
 </div>
 
 !!! note
-    If you don't have Libre Office installed, SVG to PPT can install `7.1.0` for you! :slightly_smiling_face:
+    If you don't have Libre Office installed, SVG to PPT can install `7.1.0` for you&nbsp; :slightly_smiling_face:
 
 ## Ways To Use
 
-<div class="two-icon" align="center">
+<div class="two-icon center">
   <span>
     <a target="_blank"href="cli">
       CLI
-      <img src="img/iterm2-icon.svg" class="center" alt="iTerm2 icon" title="iTerm2 icon"/>
+      <img src="img/iterm2-icon.svg" alt="iTerm2 icon" title="iTerm2 icon"/>
     </a>
   </span>
   <span>
     <a target="_blank"href="alfred">
       Alfred
-      <img src="img/alfred-icon.svg" class="center" alt="Alfred icon" title="Alfred icon"/>
+      <img src="img/alfred-icon.svg" alt="Alfred icon" title="Alfred icon"/>
     </a>
   </span>
 </div>
 
-## Works With
+## Supports
 
-<div class="three-icon" align="center">
+<div class="three-icon center">
   <span>
     <a target="_blank"href="https://apps.apple.com/us/app/keynote/id409183694">
       Apple<br>Keynote
     </a>
-    <img src="img/keynote-icon.svg" class="center" alt="Keynote icon" title="Keynote icon"/>
+    <img src="img/keynote-icon.svg" alt="Keynote icon" title="Keynote icon"/>
     <span>Primarily tested with <code>10.3.9</code></span>
   </span>
   <span>
     <a target="_blank"href="https://www.microsoft.com/en-us/microsoft-365/powerpoint">
       Microsoft<br>PowerPoint
     </a>
-    <img src="img/powerpoint-icon.svg" class="center" alt="PowerPoint icon" title="Powerpoint icon"/>
+    <img src="img/powerpoint-icon.svg" alt="PowerPoint icon" title="Powerpoint icon"/>
     <span>Primarily tested with <code>16.46</code></span>
   </span>
   <span>
     <a target="_blank"href="https://www.openoffice.org">
       Apache<br>OpenOffice
     </a>
-    <img src="img/open-office-icon.svg" class="center" alt="OpenOffice icon" title="OpenOffice icon"/>
+    <img src="img/open-office-icon.svg" alt="OpenOffice icon" title="OpenOffice icon"/>
     <span>Primarily tested with <code>4.1.8</code></span>
   </span>
 </div>
-
-<style>
-  .two-icon > span
-  {
-    display: inline-block;
-    width: 200px;
-    margin-bottom: 20px;
-  }
-  .two-icon img
-  {
-    width: 200px;
-    height: 200px;
-    margin: 10px;
-  }
-
-  .three-icon span {
-    display: inline-block;
-  }
-  .three-icon > span {
-    width: 150px;
-    margin-bottom: 30px;
-  }
-  .three-icon img {
-    width: 150px;
-    height: 150px;
-    margin: 10px;
-  }
-
-  @media only screen and (min-width: 768px) {
-    .two-icon  > span {
-      margin: 0 50px 0 0;
-    }
-    .three-icon > span {
-      margin: 0 50px 0 0;
-    }
-  }
-</style>

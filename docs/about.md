@@ -2,13 +2,24 @@
 
 A [scalable vector graphic](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics){:target="_blank"} (SVG) is an image format that enables infinite scaling without pixelation, unlike [raster graphic formats](https://en.wikipedia.org/wiki/Raster_graphics){:target="_blank"} like JPEG and PNG. Apple Keynote and Microsoft PowerPoint don't support SVG files natively, though they have "shapes" that are vectors.
 
-In 2005, David Astling published a [script](http://mcb.berkeley.edu/labs/zusman/dave/svg2key/){target=_blank} that could convert SVG files to Keynote shapes. This application doesn't run on newer versions of macOS (likely due to being 32-bit) and is no longer supported.
+[PPT](https://www.lifewire.com/ppt-file-2622187){target=_blank} (Microsoft PowerPoint 97-2003) is an old file format developed primarily for Microsoft's PowerPoint software. Due to its popularity, it can be opened in many programs, free and paid alike.
 
-In 2016, Kyle Ledbetter posted [this article](https://kyleledbetter.medium.com/how-to-import-an-svg-into-powerpoint-or-keynote-8d3d70f347a7){target=_blank} outlining how to import SVG files into Keynote or Powerpoint by using [PPT files](https://www.lifewire.com/ppt-file-2622187){target=_blank} (Microsoft PowerPoint 97-2003) as a middleman. As noted by [others](https://medium.com/@chrishoman_15983/i-often-encounter-problems-with-opening-files-created-with-openoffice-and-i-found-libreoffice-a-5a72f652160f){target=_blank}, I found Libre Office to be more stable with less quirks.
+!!! history info
 
-To make the process more viable for people like me who regularly want SVG files in Keynote, I made an [Alfred workflow](https://www.alfredapp.com/workflows/) to automate it. Then I was able to generalize it into a [Bash](https://www.gnu.org/software/bash/){target=_blank} script and [Libre Office macro](https://help.libreoffice.org/latest/en-US/text/shared/01/06130000.html){target=_blank}.
+    === "2005"
+
+        David Astling publishes a [script](http://mcb.berkeley.edu/labs/zusman/dave/svg2key/){target=_blank} that converts SVG files to Keynote shapes. It no longer runs on newer versions of macOS (likely due to being 32-bit).
+
+    === "2016"
+
+        Kyle Ledbetter posts [an article](https://kyleledbetter.medium.com/how-to-import-an-svg-into-powerpoint-or-keynote-8d3d70f347a7){target=_blank} outlining how to import SVG files into Keynote or Powerpoint by using a PPT file as an intermediary. [Others](https://medium.com/@chrishoman_15983/i-often-encounter-problems-with-opening-files-created-with-openoffice-and-i-found-libreoffice-a-5a72f652160f){target=_blank} noted Libre Office is more stable with less quirks.
+
+    === "2021"
+        I found myself needing to transfer lots of SVG files into Keynote. To make it easier I made a crude [Alfred workflow](https://www.alfredapp.com/workflows/) to automate it. Then I was able to generalize it into a [Bash](https://www.gnu.org/software/bash/){target=_blank} script and [Libre Office macro](https://help.libreoffice.org/latest/en-US/text/shared/01/06130000.html){target=_blank}.
 
 If you would like native support for SVG files and other vector formats, I recommend [sending Apple feedback](https://www.apple.com/feedback/keynote.html){target=_blank} and voting on [Microsoft PowerPoint suggestions](https://powerpoint.uservoice.com/){target=_blank}.
+
+:star: &nbsp;Please give [SVG to PPT a star on GitHub](https://github.com/blakegearin/svg-to-ppt/stargazers) if you find it useful
 
 ## Known Issues
 
