@@ -19,42 +19,49 @@ file_uri_prefix=file://
 input_svg=$1
 
 # Check for flags overwriting defaults
-# while getopts "a:d:f:i:o:p:t:w:" option
-# do
-#   case "${option}"
-#   in
-#     a) application_directory=${OPTARG};;
-#     f) force_ppt=${OPTARG};;
-#     i) input_svg=${OPTARG};;
-#     o) output_directory=${OPTARG};;
-#     p) ppt_name=${OPTARG};;
-#     t) template_ppt=${OPTARG};;
-#     w) where_to_open=${OPTARG};;
-#     \?) echo "Hello D";;
-#   esac
-# done
-
-# Check for flags overwriting defaults
-while [[ $# -gt 0 ]] && [[ "$1" == "--"* ]] ;
+while getopts "a:f:i:o:p:t:w:dx" option
 do
-  opt="$1";
-  shift; #Expose next argument
-  case "$opt" in
-    "--") break 2;;
-    "--a") application_directory="$1"; shift;;
-    "--d") debug=true; shift;;
-    "--f") force_ppt="$1"; shift;;
-    "--i") input_svg="$1"; shift;;
-    "--o") output_directory="$1"; shift;;
-    "--p") ppt_name="$1"; shift;;
-    "--t") template_ppt="$1"; shift;;
-    "--w") where_to_open="$1"; shift;;
+  case "${option}"
+  in
+    a) application_directory=${OPTARG};;
+    f) force_ppt=${OPTARG};;
+    i) input_svg=${OPTARG};;
+    o) output_directory=${OPTARG};;
+    p) ppt_name=${OPTARG};;
+    t) template_ppt=${OPTARG};;
+    w) where_to_open=${OPTARG};;
+    d) debug=true;;
+    x) stop_before_create=true;;
   esac
 done
 
-# if options d: option; then
-#   echo 'hello D'
-# fi
+if [ "$debug" == true ]; then
+  printf "\n~INPUT FOR DEBUGGING~\n\n"
+  printf "# DEFAULTS\n"
+  c=(
+    application_directory
+    output_directory
+  )
+  for i in "${c[@]}"; do echo "$i : ${!i}"; done
+
+  printf "\n# SVG\n"
+  c=(
+    input_svg
+  )
+  for i in "${c[@]}"; do echo "$i : ${!i}"; done
+
+  printf "\n# PPT\n"
+  c=(
+    ppt_name
+    force_ppt
+    template_ppt
+    where_to_open
+  )
+  for i in "${c[@]}"; do echo "$i : ${!i}"; done
+
+  printf "\n~END~\n\n"
+fi
+
 
 # Check if first parameter ends in .svg
 if [[ "$input_svg" != *"$svg_file_ext" ]]; then
@@ -137,22 +144,29 @@ fi
 # Write filepath of SVG and PPT to input file for Libre Office to read
 printf "$file_uri_prefix$svg_filepath\n$file_uri_prefix$ppt_filepath\n" > $libre_office_input_filepath
 
-if [ "$debug" != true ]; then
-  # # Launch the template PPT with Libre Office and kick off macro
-  # /Applications/LibreOffice.app/Contents/MacOS/soffice --invisible --headless $template_ppt_filepath "vnd.sun.star.script:Standard.SVGtoPPT.Main?language=Basic&location=application"
-
-  # Launch the new PPT file if where_to_open is defined
-  if [ -z $ppt_name_suffix ]; then
-    # open -a $where_to_open $ppt_filepath
-    echo "open -a '$where_to_open' $ppt_filepath"
+if [ "$stop_before_create" != true ]; then
+  if [ ! -z $where_to_open ]; then
+    open_cmd="open -a $where_to_open $ppt_filepath"
+    eval $open_cmd
   fi
-else
-  printf "\n~DEBUG INITATED~\n\n"
+
+  # Launch the template PPT with Libre Office and kick off macro
+  libre_office_cmd="/Applications/LibreOffice.app/Contents/MacOS/soffice --invisible --headless $template_ppt_filepath \"vnd.sun.star.script:Standard.SVGtoPPT.Main?language=Basic&location=application\""
+  eval $libre_office_cmd
+fi
+
+# Launch the new PPT file if where_to_open is defined
+if [ ! -z $where_to_open ]; then
+  open_cmd="open -a $where_to_open $ppt_filepath"
+  # eval $open_cmd
+fi
+
+if [ "$debug" == true ]; then
+  printf "\n~OUTPUT FOR DEBUGGING~\n\n"
   printf "# DEFAULTS\n"
   c=(
     application_directory
     output_directory
-    libre_office_input_filepath
   )
   for i in "${c[@]}"; do echo "$i : ${!i}"; done
 
@@ -165,6 +179,14 @@ else
   )
   for i in "${c[@]}"; do echo "$i : ${!i}"; done
 
+  printf "\n# LIBRE OFFICE\n"
+  c=(
+    stop_before_create
+    libre_office_input_filepath
+    libre_office_cmd
+  )
+  for i in "${c[@]}"; do echo "$i : ${!i}"; done
+
   printf "\n# PPT\n"
   c=(
     template_ppt_filepath
@@ -173,9 +195,12 @@ else
     ppt_filepath
     force_ppt
     where_to_open
+    open_cmd
   )
   for i in "${c[@]}"; do echo "$i : ${!i}"; done
 
   # Uncomment for intense debugging
   # comm -13 <(printf %s "$before") <(set -o posix; set | sort | uniq)
+
+  printf "\n~END~\n\n"
 fi
