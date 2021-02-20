@@ -1,13 +1,24 @@
 # CLI
 
-## Getting Started
+## Installing
 
-1. Clone this repository: `git clone https://github.com/blakegearin/svg-to-keynote.git`
-2. Navigate to the new directory: `cd svg-to-keynote`
-3. Run the installation file: `bash ./install_svg_to_keynote.sh`
-4. Do you have Libre Office installed?
-    - **No:** `bash ./src/install_complete.sh`
-    - **Yes:** `bash ./src/install_basic.sh`
+!!! question "Do you have Libre Office installed?"
+
+    === "No"
+
+        Copy-paste this command in a macOS Terminal or a terminal emulator:
+
+        ```sh
+        curl -s https://raw.githubusercontent.com/blakegearin/svg-to-ppt/main/src/install_svg_to_ppt.sh | bash -s -- -i basic
+        ```
+
+    === "Yes"
+
+        Copy-paste this command in a macOS Terminal or a terminal emulator:
+
+        ```sh
+        curl -s https://raw.githubusercontent.com/blakegearin/svg-to-ppt/main/src/install_svg_to_ppt.sh | bash -s -- -i complete
+        ```
 
 ## Usage
 

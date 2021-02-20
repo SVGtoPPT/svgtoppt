@@ -227,6 +227,7 @@ create_application_config_file() {
 install_basic() {
   if [ "$1" == true ]; then
     echo "$svg Starting basic installation of SVG to PPT"
+    echo
   fi
 
   check_directory_missing $application_directory "application directory"
@@ -254,7 +255,7 @@ install_basic() {
   if [[ $? -eq 0 ]]; then
     create_application_config_file
   else
-    echo_already_exists "fetch" "application config file" $application_config_file_filepath
+    echo_already_exists "creation" "application config file" $application_config_file_filepath
   fi
 
   echo
