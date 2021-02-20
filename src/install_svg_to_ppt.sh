@@ -1,4 +1,4 @@
-# Set defaults
+# Application defaults
 application_name=svg-to-ppt
 application_directory=~/$application_name
 output_directory=$application_directory/Output
@@ -7,10 +7,12 @@ template_ppt_filepath=$application_directory/$ppt_template
 application_config_file_filepath=~/.$application_name
 stop_creations=false
 
-# Text options
+# Text formats
 txtund=$(tput sgr 0 1) # Underline
 txtbld=$(tput bold)    # Bold
 txtrst=$(tput sgr0)    # Reset
+
+# Text colors
 red=$(tput setaf 1)
 yellow=$(tput setaf 3)
 green=$(tput setaf 2)
@@ -18,6 +20,8 @@ blue=$(tput setaf 4)
 magenta=$(tput setaf 5)
 cyan=$(tput setaf 6)
 white=$(tput setaf 7)
+
+# Text combinations
 bldred=${txtbld}$red
 bldblu=${txtbld}$blue
 bldwht=${txtbld}$white
@@ -37,7 +41,6 @@ print_text_options() {
 # print_text_options
 
 # Emojis
-
 brew="🍺"
 checkmark="✅"
 dir="📁"
@@ -83,8 +86,6 @@ echo_var() {
   eval 'printf $bldcyn"Variable:$txtrst "%s"\n" "$1=\"${'"$1"'}\""'
 }
 
-echo capitalize_first
-
 echo_breakpoint() {
   var_name=$1
   echo_var $var_name
@@ -94,7 +95,7 @@ echo_breakpoint() {
   read input
 
   case $input in
-    "0") eval "$var_name"="$4"  ;;
+    "0") eval "$var_name"="$4" ;;
     "1") eval "$var_name"="$5" ;;
     "2") exit 1 ;;
   esac
@@ -113,7 +114,7 @@ check_directory_missing() {
     local found=0
   fi
 
-  echo_breakpoint found "$2" "found" 0 1
+  # echo_breakpoint found "$2" "found" 0 1
 
   return $found
 }
@@ -153,7 +154,7 @@ check_wget_installed() {
 
 # Installs wget
 install_wget() {
-  wget_install_cmd="brew install wget"
+  local wget_install_cmd="brew install wget"
   echo "Starting wget installation: $(tput sgr 0 1)$wget_install_cmd$txtrst"
 
   if [ "$stop_creations" != true ]; then
@@ -164,7 +165,7 @@ install_wget() {
   # echo_breakpoint exit_code "wget" "install" false true
 
   if [[ $exit_code -eq 0 ]]; then
-      echo_error "installing wget with Homebrew"
+    echo_error "installing wget with Homebrew"
     exit 1
   else
     echo_success "wget installed"
@@ -187,12 +188,11 @@ check_file_missing() {
 
 # Fetches a template PPT from GitHub
 fetch_template_ppt() {
-  IFS="$ppt_template" read -r template_ppt_directory string <<< "$template_ppt_filepath"
+  echo "$octo Pulling down template PPT from GitHub to directory: $template_ppt_filepath"
 
-  echo "$octo Pulling down template PPT from GitHub: $template_ppt_filepath"
-
+  template_ppt_directory=${template_ppt_filepath%/*}
   if [ "$stop_creations" != true ]; then
-    /usr/local/bin/wget https://github.com/blakegearin/svg-to-keynote/raw/main/template.ppt -P $template_ppt_directory
+    /usr/local/bin/wget https://github.com/blakegearin/svg-to-ppt/raw/main/src/template.ppt -P $template_ppt_directory
   fi
   local exit_code=$?
 
@@ -254,7 +254,7 @@ install_basic() {
   if [[ $? -eq 0 ]]; then
     create_application_config_file
   else
-    echo_already_exists "fetch" "template PPT" $application_config_file_filepath
+    echo_already_exists "fetch" "application config file" $application_config_file_filepath
   fi
 
   echo
@@ -326,7 +326,7 @@ check_homebrew_installed() {
 install_homebrew() {
   local breakpoint=false
 
-  homebrew_install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+  local homebrew_install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
   echo "$brew Starting Homebrew installation: $txtund$homebrew_install_cmd$txtrst"
 
   if [ "$stop_creations" != true ]; then
@@ -346,7 +346,7 @@ install_homebrew() {
 
 # Installs Libre Office
 install_libre_office() {
-  libre_office_install_cmd="brew install --cask libreoffice"
+  local libre_office_install_cmd="brew install --cask libreoffice"
   echo "$libre Starting Libre Office installation: $txtund$libre_office_install_cmd$txtrst"
 
   if [ "$stop_creations" != true ]; then
@@ -390,7 +390,6 @@ install_type=$1
 # Check for flags overwriting defaults
 while getopts "a:f:i:o:p:t:w:dx" option; do
   case "${option}" in
-
     a) application_directory=${OPTARG} ;;
     f) force_ppt=${OPTARG} ;;
     i) install_type=${OPTARG} ;;

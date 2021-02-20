@@ -1,7 +1,7 @@
 # Uncomment for intense debugging
 # before=$(set -o posix; set | sort);
 
-# Set defaults
+# Application defaults
 application_name=svg-to-ppt
 application_directory=~/$application_name
 output_directory=$application_directory/Output
@@ -21,7 +21,6 @@ input_svg=$1
 # Check for flags overwriting defaults
 while getopts "a:f:i:o:p:t:w:dx" option; do
   case "${option}" in
-
     a) application_directory=${OPTARG} ;;
     f) force_ppt=${OPTARG} ;;
     i) input_svg=${OPTARG} ;;
