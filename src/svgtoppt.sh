@@ -19,7 +19,7 @@ file_uri_prefix=file://
 input_svg=$1
 
 # Check for flags overwriting defaults
-while getopts "a:f:h:i:o:p:t:w:dx" option; do
+while getopts "a:f:h:i:o:p:t:w:dhx" option; do
   case "${option}" in
     a) application_directory=${OPTARG} ;;
     h) help=$
