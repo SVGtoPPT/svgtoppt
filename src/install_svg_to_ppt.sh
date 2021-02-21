@@ -1,4 +1,4 @@
-# Application defaults
+# APPLICATION DEFAULTS
 application_name=svg-to-ppt
 application_directory=~/$application_name
 output_directory=$application_directory/Output
@@ -7,12 +7,12 @@ template_ppt_filepath=$application_directory/$ppt_template
 application_config_file_filepath=~/.$application_name
 stop_creations=false
 
-# Text formats
+# TEXT FORMATS
 txtund=$(tput sgr 0 1) # Underline
 txtbld=$(tput bold)    # Bold
 txtrst=$(tput sgr0)    # Reset
 
-# Text colors
+# TEXT COLORS
 red=$(tput setaf 1)
 yellow=$(tput setaf 3)
 green=$(tput setaf 2)
@@ -21,7 +21,7 @@ magenta=$(tput setaf 5)
 cyan=$(tput setaf 6)
 white=$(tput setaf 7)
 
-# Text combinations
+# TEXT COMBINATIONS
 bldred=${txtbld}$red
 bldblu=${txtbld}$blue
 bldwht=${txtbld}$white
@@ -40,7 +40,7 @@ print_text_options() {
 }
 # print_text_options
 
-# Emojis
+# EMOJIS
 brew="🍺"
 checkmark="✅"
 dir="📁"
@@ -52,7 +52,7 @@ swirl="🌀"
 warning="⚠️ "
 x_mark="❌"
 
-# Helper functions
+# HELPER FUNCTIONS
 echo_bold() {
   echo -e "\033[1m$1\033[0m"
   tput sgr0
@@ -103,128 +103,126 @@ echo_breakpoint() {
 
 output_code() { return "$1"; }
 
-# Main
-
-# Checks if a directory exists
-# Returns 0 for not found, 1 for found
-check_directory_missing() {
-  if [ -d $1 ]; then
-    local found=1
-  else
-    local found=0
-  fi
-
-  # echo_breakpoint found "$2" "found" 0 1
-
-  return $found
-}
-
-# Creates a directory
-create_directory() {
-  echo "$dir Creating directory: $1"
-  if [ "$stop_creations" != true ]; then
-    mkdir $1
-  fi
-  local exit_code=$?
-
-  # echo_breakpoint exit_code "$2" "created" false true
-
-  if [[ $? -eq 1 ]]; then
-    echo_failed "create $2: $bldwht$1"
-    exit 1
-  else
-    echo_success "${2^} created"
-  fi
-}
-
-# Checks if wget is installed
-# Returns 0 for not found, 1 for found
-check_wget_installed() {
-  local wget_location=$(command -v wget)
-
-  # echo_breakpoint wget_location "wget" "found" "" 1
-
-  if [ -z $wget_location ]; then
-    return 0
-  else
-    echo_already_installed "wget" $wget_location
-    return 1
-  fi
-}
-
-# Installs wget
-install_wget() {
-  local wget_install_cmd="brew install wget"
-  echo "Starting wget installation: $(tput sgr 0 1)$wget_install_cmd$txtrst"
-
-  if [ "$stop_creations" != true ]; then
-    eval $wget_install_cmd
-  fi
-  local exit_code=$?
-
-  # echo_breakpoint exit_code "wget" "install" false true
-
-  if [[ $exit_code -eq 0 ]]; then
-    echo_error "installing wget with Homebrew"
-    exit 1
-  else
-    echo_success "wget installed"
-  fi
-}
-
-# Checks if a file exists
-# Returns 0 for not found, 1 for found
-check_file_missing() {
-  if test -f $1; then
-    local found=1
-  else
-    local found=0
-  fi
-
-  # echo_breakpoint found "$2" "found" 0 1
-
-  return $found
-}
-
-# Fetches a template PPT from GitHub
-fetch_template_ppt() {
-  echo "$octo Pulling down template PPT from GitHub to directory: $template_ppt_filepath"
-
-  template_ppt_directory=${template_ppt_filepath%/*}
-  if [ "$stop_creations" != true ]; then
-    /usr/local/bin/wget https://github.com/blakegearin/svg-to-ppt/raw/main/src/template.ppt -P $template_ppt_directory
-  fi
-  local exit_code=$?
-
-  # echo_breakpoint exit_code "template PPT" "fetched" 1 0
-
-  if [[ $exit_code -eq 1 ]]; then
-    echo_failed "pull down template.ppt file from GitHub"
-    exit 1
-  else
-    echo_success "Template PPT created: $template_ppt_filepath"
-  fi
-}
-
-# Creates the application configuration file
-create_application_config_file() {
-  if [ "$stop_creations" != true ]; then
-    touch $application_config_file_filepath
-  fi
-  local exit_code=$?
-
-  # echo_breakpoint exit_code "application config file" "created" 0 1
-
-  if [[ $exit_code -eq 1 ]]; then
-    echo_error "creating application config file"
-    exit 1
-  else
-    echo_success "Application config file created"
-  fi
-}
-
 # Creates directories and files necessary for the application to run
-install_basic() {
+install_basic() (
+  # Checks if a directory exists
+  # Returns 0 for not found, 1 for found
+  check_directory_missing() {
+    if [ -d $1 ]; then
+      local found=1
+    else
+      local found=0
+    fi
+
+    # echo_breakpoint found "$2" "found" 0 1
+
+    return $found
+  }
+
+  # Creates a directory
+  create_directory() {
+    echo "$dir Creating directory: $1"
+    if [ "$stop_creations" != true ]; then
+      mkdir $1
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$2" "created" false true
+
+    if [[ $? -eq 1 ]]; then
+      echo_failed "create $2: $bldwht$1"
+      exit 1
+    else
+      echo_success "${2^} created"
+    fi
+  }
+
+  # Checks if wget is installed
+  # Returns 0 for not found, 1 for found
+  check_wget_installed() {
+    local wget_location=$(command -v wget)
+
+    # echo_breakpoint wget_location "wget" "found" "" 1
+
+    if [ -z $wget_location ]; then
+      return 0
+    else
+      echo_already_installed "wget" $wget_location
+      return 1
+    fi
+  }
+
+  # Installs wget
+  install_wget() {
+    local wget_install_cmd="brew install wget"
+    echo "Starting wget installation: $(tput sgr 0 1)$wget_install_cmd$txtrst"
+
+    if [ "$stop_creations" != true ]; then
+      eval $wget_install_cmd
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "wget" "install" false true
+
+    if [[ $exit_code -eq 0 ]]; then
+      echo_error "installing wget with Homebrew"
+      exit 1
+    else
+      echo_success "wget installed"
+    fi
+  }
+
+  # Checks if a file exists
+  # Returns 0 for not found, 1 for found
+  check_file_missing() {
+    if test -f $1; then
+      local found=1
+    else
+      local found=0
+    fi
+
+    # echo_breakpoint found "$2" "found" 0 1
+
+    return $found
+  }
+
+  # Fetches a template PPT from GitHub
+  fetch_template_ppt() {
+    echo "$octo Pulling down template PPT from GitHub to directory: $template_ppt_filepath"
+
+    template_ppt_directory=${template_ppt_filepath%/*}
+    if [ "$stop_creations" != true ]; then
+      /usr/local/bin/wget https://github.com/blakegearin/svg-to-ppt/raw/main/src/template.ppt -P $template_ppt_directory
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "template PPT" "fetched" 1 0
+
+    if [[ $exit_code -eq 1 ]]; then
+      echo_failed "pull down template.ppt file from GitHub"
+      exit 1
+    else
+      echo_success "Template PPT created: $template_ppt_filepath"
+    fi
+  }
+
+  # Creates the application configuration file
+  create_application_config_file() {
+    if [ "$stop_creations" != true ]; then
+      touch $application_config_file_filepath
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "application config file" "created" 0 1
+
+    if [[ $exit_code -eq 1 ]]; then
+      echo_error "creating application config file"
+      exit 1
+    else
+      echo_success "Application config file created"
+    fi
+  }
+
   if [ "$1" == true ]; then
     echo "$svg Starting basic installation of SVG to PPT"
     echo
@@ -260,113 +258,113 @@ install_basic() {
 
   echo
   echo_success $txtbld"SVG to PPT installed"
-}
+)
 
-# Checks whether an application is installed
-# Credit: https://stackoverflow.com/a/12900116
-whichapp() {
-  local appNameOrBundleId=$1 isAppName=0 bundleId
-  # Determine whether an app *name* or *bundle id* was specified
-  [[ $appNameOrBundleId =~ \.[aA][pP][pP]$ || $appNameOrBundleId =~ ^[^.]+$ ]] && isAppName=1
-  if ((isAppName)); then # an application NAME was specified
-    # Translate to a bundle id first
-    bundleId=$(osascript -e "id of application \"$appNameOrBundleId\"" 2> /dev/null) ||
+# Installs Homebrew (if needed) and Libre Office, then executes a basic install
+install_complete() (
+  # Checks whether an application is installed
+  # Credit: https://stackoverflow.com/a/12900116
+  whichapp() {
+    local appNameOrBundleId=$1 isAppName=0 bundleId
+    # Determine whether an app *name* or *bundle id* was specified
+    [[ $appNameOrBundleId =~ \.[aA][pP][pP]$ || $appNameOrBundleId =~ ^[^.]+$ ]] && isAppName=1
+    if ((isAppName)); then # an application NAME was specified
+      # Translate to a bundle id first
+      bundleId=$(osascript -e "id of application \"$appNameOrBundleId\"" 2> /dev/null) ||
+        {
+          return 1
+        }
+    else # a bundle id was specified
+      bundleId=$appNameOrBundleId
+    fi
+    # Let AppleScript determine the full bundle path
+    fullPath=$(osascript -e "tell application \"Finder\" to POSIX path of (get application file id \"$bundleId\" as alias)" 2> /dev/null ||
       {
+        echo "$FUNCNAME: ERROR: Application with specified bundle ID not found: $bundleId" 1>&2
         return 1
-      }
-  else # a bundle id was specified
-    bundleId=$appNameOrBundleId
-  fi
-  # Let AppleScript determine the full bundle path
-  fullPath=$(osascript -e "tell application \"Finder\" to POSIX path of (get application file id \"$bundleId\" as alias)" 2> /dev/null ||
-    {
-      echo "$FUNCNAME: ERROR: Application with specified bundle ID not found: $bundleId" 1>&2
+      })
+    printf '%s\n' "$fullPath"
+    # Warn about /Volumes/... paths, because applications launched from mounted devices aren't persistently installed
+    if [[ $fullPath == /Volumes/* ]]; then
+      echo "NOTE: Application is not persistently installed, due to being located on a mounted volume." >&2
+    fi
+  }
+
+  # Checks if Libre Office is installed
+  # Returns 0 for not found, 1 for found
+  check_libre_office_installed() {
+    libre_office_location=$(whichapp "LibreOffice")
+
+    local breakpoint=false
+    if [ "$breakpoint" == true ]; then
+      echo_breakpoint libre_office_location "Libre Office" "found" "" 1
+    fi
+
+    if [[ -z "$libre_office_location" ]]; then
+      return 0
+    else
+      echo_already_installed "Libre Office" $libre_office_location
       return 1
-    })
-  printf '%s\n' "$fullPath"
-  # Warn about /Volumes/... paths, because applications launched from mounted devices aren't persistently installed
-  if [[ $fullPath == /Volumes/* ]]; then
-    echo "NOTE: Application is not persistently installed, due to being located on a mounted volume." >&2
-  fi
-}
+    fi
+  }
 
-# Checks if Libre Office is installed
-# Returns 0 for not found, 1 for found
-check_libre_office_installed() {
-  libre_office_location=$(whichapp "LibreOffice")
+  # Checks if Homebrew is installed
+  # Returns 0 for not found, 1 for found
+  check_homebrew_installed() {
+    local homebrew_location=$(command -v brew)
 
-  local breakpoint=false
-  if [ "$breakpoint" == true ]; then
-    echo_breakpoint libre_office_location "Libre Office" "found" "" 1
-  fi
+    # echo_breakpoint homebrew_location "Homebrew" "found" "" true
 
-  if [[ -z "$libre_office_location" ]]; then
-    return 0
-  else
-    echo_already_installed "Libre Office" $libre_office_location
-    return 1
-  fi
-}
+    if [ -z $homebrew_location ]; then
+      return 0
+    else
+      echo_already_installed "Homebrew" $homebrew_location
+      return 1
+    fi
+  }
 
-# Checks if Homebrew is installed
-# Returns 0 for not found, 1 for found
-check_homebrew_installed() {
-  local homebrew_location=$(command -v brew)
+  # Installs Homebrew
+  install_homebrew() {
+    local breakpoint=false
 
-  # echo_breakpoint homebrew_location "Homebrew" "found" "" true
+    local homebrew_install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+    echo "$brew Starting Homebrew installation: $txtund$homebrew_install_cmd$txtrst"
 
-  if [ -z $homebrew_location ]; then
-    return 0
-  else
-    echo_already_installed "Homebrew" $homebrew_location
-    return 1
-  fi
-}
+    if [ "$stop_creations" != true ]; then
+      eval $homebrew_install_cmd
+    fi
+    local exit_code=$?
 
-# Installs Homebrew
-install_homebrew() {
-  local breakpoint=false
+    # echo_breakpoint homebrew_location "Homebrew" "install" 0 1
 
-  local homebrew_install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-  echo "$brew Starting Homebrew installation: $txtund$homebrew_install_cmd$txtrst"
+    if [[ $exit_code -ne 0 ]]; then
+      echo_error "installing Homebrew"
+      exit 1
+    else
+      echo_success "Homebrew installed"
+    fi
+  }
 
-  if [ "$stop_creations" != true ]; then
-    eval $homebrew_install_cmd
-  fi
-  local exit_code=$?
+  # Installs Libre Office
+  install_libre_office() {
+    local libre_office_install_cmd="brew install --cask libreoffice"
+    echo "$libre Starting Libre Office installation: $txtund$libre_office_install_cmd$txtrst"
 
-  # echo_breakpoint homebrew_location "Homebrew" "install" 0 1
+    if [ "$stop_creations" != true ]; then
+      eval $libre_office_install_cmd
+    fi
+    local exit_code=$?
 
-  if [[ $exit_code -ne 0 ]]; then
-    echo_error "installing Homebrew"
-    exit 1
-  else
-    echo_success "Homebrew installed"
-  fi
-}
+    # echo_breakpoint homebrew_location "Libre Office" "install" 0 1
 
-# Installs Libre Office
-install_libre_office() {
-  local libre_office_install_cmd="brew install --cask libreoffice"
-  echo "$libre Starting Libre Office installation: $txtund$libre_office_install_cmd$txtrst"
+    if [[ $exit_code -ne 0 ]]; then
+      echo_error "installing Libre Office with Homebrew"
+      exit 1
+    else
+      echo_success "Libre Office installed"
+    fi
+  }
 
-  if [ "$stop_creations" != true ]; then
-    eval $libre_office_install_cmd
-  fi
-  local exit_code=$?
-
-  # echo_breakpoint homebrew_location "Libre Office" "install" 0 1
-
-  if [[ $exit_code -ne 0 ]]; then
-    echo_error "installing Libre Office with Homebrew"
-    exit 1
-  else
-    echo_success "Libre Office installed"
-  fi
-}
-
-# Installs Libre Office and then a basic install
-install_complete() {
   echo_bold "$svg Starting complete installation of SVG to PPT"
   echo
 
@@ -384,7 +382,9 @@ install_complete() {
 
   echo
   install_basic false
-}
+)
+
+# MAIN
 
 install_type=$1
 
