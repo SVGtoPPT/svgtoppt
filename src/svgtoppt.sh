@@ -15,6 +15,11 @@ svg_file_ext=.svg
 ppt_file_ext=.ppt
 file_uri_prefix=file://
 
+# Helper functions
+echo_var() {
+  eval 'printf "%s\n" "$1: ${'"$1"'}"'
+}
+
 # First parameter should be SVG file if no flags are passed
 input_svg=$1
 
@@ -22,7 +27,7 @@ input_svg=$1
 while getopts "a:f:i:o:p:t:w:dhx" option; do
   case "${option}" in
     a) application_directory=${OPTARG} ;;
-    h) help=true;;
+    h) help=true ;;
     f) force_ppt=${OPTARG} ;;
     i) input_svg=${OPTARG} ;;
     o) output_directory=${OPTARG} ;;
@@ -34,9 +39,10 @@ while getopts "a:f:i:o:p:t:w:dhx" option; do
   esac
 done
 
-echo_var() {
-  eval 'printf "%s\n" "$1: ${'"$1"'}"'
-}
+if [ "$help" == true ]; then
+  echo "Usage: svgtoppt [PATH_TO_SVG_FILE]"
+  exit 0
+fi
 
 if [ "$debug" == true ]; then
   printf "\n~INPUT FOR DEBUGGING~\n\n"
@@ -64,7 +70,7 @@ fi
 
 # Remove file extension from ppt_name if present
 if [[ "$ppt_name" == *"$ppt_file_ext" ]]; then
-  IFS='.' read -r ppt_name string <<< "$ppt_name"
+  IFS='.' read -r ppt_name string <<<"$ppt_name"
 fi
 
 # Check if SVG file exists
@@ -110,7 +116,7 @@ esac
 
 # Set SVG flag-dependent defaults
 svg_name_with_ext=${input_svg##*/}
-IFS='.' read -r svg_name string <<< "$svg_name_with_ext"
+IFS='.' read -r svg_name string <<<"$svg_name_with_ext"
 
 # Set PPT flag-dependent defaults
 if [ -z $ppt_name ]; then
@@ -134,7 +140,7 @@ else
 fi
 
 # Write filepath of SVG and PPT to input file for Libre Office to read
-printf "$file_uri_prefix$svg_filepath\n$file_uri_prefix$ppt_filepath\n" > $libre_office_input_filepath
+printf "$file_uri_prefix$svg_filepath\n$file_uri_prefix$ppt_filepath\n" >$libre_office_input_filepath
 
 if [ "$stop_creations" != true ]; then
   if [ ! -z $where_to_open ]; then

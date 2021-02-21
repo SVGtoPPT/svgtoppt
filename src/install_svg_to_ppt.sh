@@ -52,7 +52,7 @@ swirl="🌀"
 warning="⚠️ "
 x_mark="❌"
 
-# Helper function
+# Helper functions
 echo_bold() {
   echo -e "\033[1m$1\033[0m"
   tput sgr0
