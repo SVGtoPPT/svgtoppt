@@ -22,7 +22,7 @@ input_svg=$1
 while getopts "a:f:h:i:o:p:t:w:dx" option; do
   case "${option}" in
     a) application_directory=${OPTARG} ;;
-h
+h)
     f) force_ppt=${OPTARG} ;;
     i) input_svg=${OPTARG} ;;
     o) output_directory=${OPTARG} ;;
