@@ -5,18 +5,23 @@
 !!! question "Do you have Libre Office installed?"
 
     === "No"
+        SVG to PPT can install Libre Office `7.1.0` for you. Copy-paste this command in a macOS Terminal or a terminal emulator:
 
-        Copy-paste this command in a macOS Terminal or a terminal emulator:
-
-        ```sh
+        ``` bash
         curl -s https://raw.githubusercontent.com/blakegearin/svg-to-ppt/main/src/install_svg_to_ppt.sh | bash -s -- -i basic
+        ```
+
+        If you want to install Libre Office yourself you can download it from [their website](https://www.libreoffice.org/download/download) or you can use Homebrew:
+
+        ``` bash
+        brew install --cask libreoffice"
         ```
 
     === "Yes"
 
         Copy-paste this command in a macOS Terminal or a terminal emulator:
 
-        ```sh
+        ``` bash
         curl -s https://raw.githubusercontent.com/blakegearin/svg-to-ppt/main/src/install_svg_to_ppt.sh | bash -s -- -i complete
         ```
 
