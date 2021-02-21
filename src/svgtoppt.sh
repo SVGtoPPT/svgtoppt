@@ -14,7 +14,7 @@ where_to_open=keynote
 svg_file_ext=.svg
 ppt_file_ext=.ppt
 file_uri_prefix=file://
-
+∏
 # First parameter should be SVG file if no flags are passed
 input_svg=$1
 
