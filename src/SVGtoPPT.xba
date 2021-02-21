@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script:module PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "module.dtd">
+<script:module xmlns:script="http://openoffice.org/2000/script" script:name="SVGtoKeynote" script:language="StarBasic" script:moduleType="normal">REM  *****  BASIC  *****
+
+Sub Main	
+	dim sUrlDoc as string
+	dim oDoc as object, oCursor as object
+	dim svgFilePath as string, pptFileName as string
+	
+	dim Prop(0) as new com.sun.star.beans.PropertyValue
+	Prop(0).Name = &quot;Hidden&quot;
+	Prop(0).Value = true
+	
+	sUrlDoc = convertToUrl(&quot;file:///Users/bb051471/svg-to-keynote/.input&quot;)
+
+	oDoc = StarDesktop.loadComponentFromURL(sUrlDoc, &quot;_blank&quot;, 0, Prop())
+	oCursor = oDoc.CurrentController.viewCursor
+	oCursor.gotoStart(true)
+	oCursor.gotoEndOfLine(true)
+	svgFilePath = oCursor.string
+	
+	oCursor.goDown(1, false)
+	oCursor.gotoStart(true)
+	oCursor.gotoEndOfLine(true)
+	pptFileName = Mid(oCursor.string, 2)
+	
+	dim document as object
+	dim dispatcher as object
+	
+	document = ThisComponent.CurrentController.Frame
+	dispatcher = createUnoService(&quot;com.sun.star.frame.DispatchHelper&quot;)
+	
+	importAndFormatSVG(document, dispatcher, svgFilePath)
+	saveFileAsPPT(document, dispatcher, pptFileName)
+	closeAll()
+End Sub
+
+&apos; Handles importing the SVG file as input
+Sub importandFormatSVG(document as object, dispatcher as object, svgFilePath as string)
+	dim imageArgs(3) as new com.sun.star.beans.PropertyValue
+	imageArgs(0).Name = &quot;FileName&quot;
+	imageArgs(0).Value = svgFilePath
+	imageArgs(1).Name = &quot;FilterName&quot;
+	imageArgs(1).Value = &quot;&lt;All images&gt;&quot;
+	imageArgs(2).Name = &quot;AsLink&quot;
+	imageArgs(2).Value = false
+	imageArgs(3).Name = &quot;Style&quot;
+	imageArgs(3).Value = &quot;Graphics&quot;
+	
+	&apos; Fetches the SVG
+	dispatcher.executeDispatch(document, &quot;.uno:InsertGraphic&quot;, &quot;&quot;, 0, imageArgs)
+	
+	&apos; Centers the SVG horizontally &amp; vertically, then breaks it into pieces (paths)
+	dispatcher.executeDispatch(document, &quot;.uno:AlignCenter&quot;, &quot;&quot;, 0, imageArgs)	
+	dispatcher.executeDispatch(document, &quot;.uno:AlignMiddle&quot;, &quot;&quot;, 0, imageArgs)
+	dispatcher.executeDispatch(document, &quot;.uno:Break&quot;, &quot;&quot;, 0, imageArgs)
+End Sub
+
+&apos; Handles exporting the PPT file as output
+Sub saveFileAsPPT(document as object, dispatcher as object, pptFileName as string)
+	dim saveArgs(1) as new com.sun.star.beans.PropertyValue
+	saveArgs(0).Name = &quot;URL&quot;
+	saveArgs(0).Value = pptFileName
+	saveArgs(1).Name = &quot;FilterName&quot;
+	saveArgs(1).Value = &quot;MS PowerPoint 97&quot;
+	
+	dispatcher.executeDispatch(document, &quot;.uno:SaveAs&quot;, &quot;&quot;, 0, saveArgs)
+End Sub
+
+Sub closeAll()
+	ThisComponent.close(True)
+	Wait 400
+	starDesktop.terminate
+End Sub
+</script:module>
