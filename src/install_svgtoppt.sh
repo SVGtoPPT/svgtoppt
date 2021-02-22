@@ -2,8 +2,10 @@
 application_name=svg-to-ppt
 application_directory=~/$application_name
 output_directory=$application_directory/Output
-ppt_template=template.ppt
-template_ppt_filepath=$application_directory/$ppt_template
+template_ppt=template.ppt
+template_ppt_filepath=$application_directory/$template_ppt
+bash_script=svgtoppt
+bash_script_filepath=/usr/local/bin/$bash_script
 application_config_file_filepath=~/.$application_name
 stop_creations=false
 
@@ -186,23 +188,23 @@ install_basic() (
     return $found
   }
 
-  # Fetches a template PPT from GitHub
-  fetch_template_ppt() {
-    echo "$octo Pulling down template PPT from GitHub to directory: $template_ppt_filepath"
+  # Fetches a remote file
+  fetch_remote_file() {
+    echo "$octo Pulling down $2 from GitHub to directory: $1"
 
-    template_ppt_directory=${template_ppt_filepath%/*}
+    file_parent_directory=${1%/*}
     if [ "$stop_creations" != true ]; then
-      /usr/local/bin/wget https://github.com/blakegearin/svg-to-ppt/raw/main/src/template.ppt -P $template_ppt_directory
+      /usr/local/bin/wget -P $file_parent_directory $3
     fi
     local exit_code=$?
 
-    # echo_breakpoint exit_code "template PPT" "fetched" 1 0
+    # echo_breakpoint exit_code $2 "fetched" 1 0
 
     if [[ $exit_code -eq 1 ]]; then
-      echo_failed "pull down template.ppt file from GitHub"
+      echo_failed "pull down $2 file from GitHub"
       exit 1
     else
-      echo_success "Template PPT created: $template_ppt_filepath"
+      echo_success "${2^} created: $1"
     fi
   }
 
@@ -228,25 +230,42 @@ install_basic() (
     echo
   fi
 
-  check_directory_missing $application_directory "application directory"
+  local description="application directory"
+  check_directory_missing $application_directory "$description"
   if [[ $? -eq 0 ]]; then
-    create_directory $application_directory "application directory"
+    create_directory $application_directory "$description"
   else
-    echo_already_exists "creation" "application directory" $application_directory
+    echo_already_exists "creation" "$description" $application_directory
   fi
 
-  check_directory_missing $output_directory "output directory"
+  local description="output directory"
+  check_directory_missing $output_directory "$description"
   if [[ $? -eq 0 ]]; then
-    create_directory $output_directory "output directory"
+    create_directory $output_directory "$description"
   else
-    echo_already_exists "creation" "output directory" $output_directory
+    echo_already_exists "creation" "$description" $output_directory
   fi
 
-  check_file_missing $template_ppt_filepath "template PPT"
+  local description="template PPT"
+  check_file_missing $template_ppt_filepath "$description"
   if [[ $? -eq 0 ]]; then
-    fetch_template_ppt
+    local output_filepath=$template_ppt_filepath
+    local remote_url=https://github.com/SVGtoPPT/svg-to-ppt/raw/main/src/template.ppt
+    fetch_remote_file $output_filepath "$description" $remote_url
   else
-    echo_already_exists "fetch" "template PPT" $template_ppt_filepath
+    echo_already_exists "fetch" "$description" $template_ppt_filepath
+  fi
+
+  local description="Bash script file"
+  check_file_missing $bash_script_filepath "$description"
+  if [[ $? -eq 0 ]]; then
+    local output_filepath=$bash_script_filepath
+    local remote_url=https://raw.githubusercontent.com/SVGtoPPT/svg-to-ppt/main/src/svgtoppt.sh
+    fetch_remote_file $output_filepath "$description" $remote_url
+    mv "$bash_script_filepath.sh" $bash_script_filepath
+    chmod +x $bash_script_filepath
+  else
+    echo_already_exists "fetch" "$description" $bash_script_filepath
   fi
 
   check_file_missing $application_config_file_filepath "application config file"
@@ -293,17 +312,15 @@ install_complete() (
   # Checks if Libre Office is installed
   # Returns 0 for not found, 1 for found
   check_libre_office_installed() {
+    local description="Libre Office"
     libre_office_location=$(whichapp "LibreOffice")
 
-    local breakpoint=false
-    if [ "$breakpoint" == true ]; then
-      echo_breakpoint libre_office_location "Libre Office" "found" "" 1
-    fi
+    # echo_breakpoint libre_office_location $description "found" "" true
 
     if [[ -z "$libre_office_location" ]]; then
       return 0
     else
-      echo_already_installed "Libre Office" $libre_office_location
+      echo_already_installed $description $libre_office_location
       return 1
     fi
   }
@@ -311,57 +328,58 @@ install_complete() (
   # Checks if Homebrew is installed
   # Returns 0 for not found, 1 for found
   check_homebrew_installed() {
+    local description="Homebrew"
     local homebrew_location=$(command -v brew)
 
-    # echo_breakpoint homebrew_location "Homebrew" "found" "" true
+    # echo_breakpoint homebrew_location $description "found" "" true
 
     if [ -z $homebrew_location ]; then
       return 0
     else
-      echo_already_installed "Homebrew" $homebrew_location
+      echo_already_installed $description $homebrew_location
       return 1
     fi
   }
 
   # Installs Homebrew
   install_homebrew() {
-    local breakpoint=false
-
+    local description="Homebrew"
     local homebrew_install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-    echo "$brew Starting Homebrew installation: $txtund$homebrew_install_cmd$txtrst"
+    echo "$brew Starting $description installation: $txtund$homebrew_install_cmd$txtrst"
 
     if [ "$stop_creations" != true ]; then
       eval $homebrew_install_cmd
     fi
     local exit_code=$?
 
-    # echo_breakpoint homebrew_location "Homebrew" "install" 0 1
+    # echo_breakpoint homebrew_location $description "install" 0 1
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_error "installing Homebrew"
+      echo_error "installing $description"
       exit 1
     else
-      echo_success "Homebrew installed"
+      echo_success "$description installed"
     fi
   }
 
   # Installs Libre Office
   install_libre_office() {
+    local description="Libre Office"
     local libre_office_install_cmd="brew install --cask libreoffice"
-    echo "$libre Starting Libre Office installation: $txtund$libre_office_install_cmd$txtrst"
+    echo "$libre Starting $description installation: $txtund$libre_office_install_cmd$txtrst"
 
     if [ "$stop_creations" != true ]; then
       eval $libre_office_install_cmd
     fi
     local exit_code=$?
 
-    # echo_breakpoint homebrew_location "Libre Office" "install" 0 1
+    # echo_breakpoint homebrew_location $description "install" 0 1
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_error "installing Libre Office with Homebrew"
+      echo_error "installing $description with Homebrew"
       exit 1
     else
-      echo_success "Libre Office installed"
+      echo_success "$description installed"
     fi
   }
 
