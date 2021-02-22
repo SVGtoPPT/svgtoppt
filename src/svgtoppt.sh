@@ -1,7 +1,7 @@
 # Uncomment for intense debugging
 # before=$(set -o posix; set | sort);
 
-# Application defaults
+# APPLICATION DEFAULTS
 application_name=svg-to-ppt
 application_directory=~/$application_name
 output_directory=$application_directory/Output
@@ -10,12 +10,32 @@ libre_office_input_filepath=~/.$application_name
 force_ppt=false
 where_to_open=keynote
 
-# Helpful strings
+# HELPFUL STRINGS
 svg_file_ext=.svg
 ppt_file_ext=.ppt
 file_uri_prefix=file://
 
-# Helper functions
+# TEXT FORMATS
+txtund=$(tput sgr 0 1) # Underline
+txtbld=$(tput bold)    # Bold
+txtrst=$(tput sgr0)    # Reset
+
+# TEXT COLORS
+red=$(tput setaf 1)
+yellow=$(tput setaf 3)
+green=$(tput setaf 2)
+blue=$(tput setaf 4)
+magenta=$(tput setaf 5)
+cyan=$(tput setaf 6)
+white=$(tput setaf 7)
+
+# TEXT COMBINATIONS
+bldred=${txtbld}$red
+bldblu=${txtbld}$blue
+bldwht=${txtbld}$white
+bldcyn=${txtbld}$cyan
+
+# HELPER FUNCTIONS
 echo_var() {
   eval 'printf "%s\n" "$1: ${'"$1"'}"'
 }
@@ -40,7 +60,7 @@ while getopts "a:f:i:o:p:t:w:dhx" option; do
 done
 
 if [ "$help" == true ]; then
-  echo "Usage: svgtoppt [PATH_TO_SVG_FILE]"
+  echo $bldwht"Usage:$txtrst svgtoppt [PATH_TO_SVG_FILE]"
   exit 0
 fi
 
