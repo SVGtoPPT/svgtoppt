@@ -1,37 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE script:module PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "module.dtd">
-<script:module xmlns:script="http://openoffice.org/2000/script" script:name="SVGtoKeynote" script:language="StarBasic" script:moduleType="normal">REM  *****  BASIC  *****
+<script:module xmlns:script="http://openoffice.org/2000/script" script:name="SVGtoPPT" script:language="StarBasic" script:moduleType="normal">REM  *****  BASIC  *****
 
-Sub Main	
-	dim sUrlDoc as string
-	dim oDoc as object, oCursor as object
+Sub Main
 	dim svgFilePath as string, pptFileName as string
-	
-	dim Prop(0) as new com.sun.star.beans.PropertyValue
-	Prop(0).Name = &quot;Hidden&quot;
-	Prop(0).Value = true
-	
-	sUrlDoc = convertToUrl(&quot;file:///Users/bb051471/svg-to-keynote/.input&quot;)
 
-	oDoc = StarDesktop.loadComponentFromURL(sUrlDoc, &quot;_blank&quot;, 0, Prop())
-	oCursor = oDoc.CurrentController.viewCursor
-	oCursor.gotoStart(true)
-	oCursor.gotoEndOfLine(true)
-	svgFilePath = oCursor.string
-	
-	oCursor.goDown(1, false)
-	oCursor.gotoStart(true)
-	oCursor.gotoEndOfLine(true)
-	pptFileName = Mid(oCursor.string, 2)
-	
+	svgFilePath = &quot;file://SVG_FILEPATH&quot;
+	pptFileName = &quot;file://PPT_FILEPATH&quot;
+
 	dim document as object
 	dim dispatcher as object
-	
+
 	document = ThisComponent.CurrentController.Frame
 	dispatcher = createUnoService(&quot;com.sun.star.frame.DispatchHelper&quot;)
-	
+
 	importAndFormatSVG(document, dispatcher, svgFilePath)
 	saveFileAsPPT(document, dispatcher, pptFileName)
+
 	closeAll()
 End Sub
 
@@ -46,12 +31,12 @@ Sub importandFormatSVG(document as object, dispatcher as object, svgFilePath as 
 	imageArgs(2).Value = false
 	imageArgs(3).Name = &quot;Style&quot;
 	imageArgs(3).Value = &quot;Graphics&quot;
-	
+
 	&apos; Fetches the SVG
 	dispatcher.executeDispatch(document, &quot;.uno:InsertGraphic&quot;, &quot;&quot;, 0, imageArgs)
-	
+
 	&apos; Centers the SVG horizontally &amp; vertically, then breaks it into pieces (paths)
-	dispatcher.executeDispatch(document, &quot;.uno:AlignCenter&quot;, &quot;&quot;, 0, imageArgs)	
+	dispatcher.executeDispatch(document, &quot;.uno:AlignCenter&quot;, &quot;&quot;, 0, imageArgs)
 	dispatcher.executeDispatch(document, &quot;.uno:AlignMiddle&quot;, &quot;&quot;, 0, imageArgs)
 	dispatcher.executeDispatch(document, &quot;.uno:Break&quot;, &quot;&quot;, 0, imageArgs)
 End Sub
@@ -63,7 +48,7 @@ Sub saveFileAsPPT(document as object, dispatcher as object, pptFileName as strin
 	saveArgs(0).Value = pptFileName
 	saveArgs(1).Name = &quot;FilterName&quot;
 	saveArgs(1).Value = &quot;MS PowerPoint 97&quot;
-	
+
 	dispatcher.executeDispatch(document, &quot;.uno:SaveAs&quot;, &quot;&quot;, 0, saveArgs)
 End Sub
 

@@ -1,0 +1,5 @@
+output_directory=$application_directory/Output
+template_ppt_filepath=$application_directory/template.ppt
+stop_creations=false
+force_ppt=false
+where_to_open=keynote

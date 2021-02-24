@@ -1,13 +1,29 @@
+# APPLICATION CONFIG VALUES
+version=1.0.0-alpha10
+application_name=svgtoppt
+application_config_file=$application_name
+application_config_file_filepath=~/.$application_config_file
+application_preferemces_file=$application_name-preferences
+application_preferences_file_filepath=~/.$application_preferemces_file
+
+# BASH SCRIPT CONFIG VALUES
+bash_script=svgtoppt
+bash_script_filepath=/usr/local/bin/$bash_script
+
+# LIBRE OFFICE MACRO CONFIG VALUES
+libre_office_macro_template=SVGtoPPT_template.xba
+application_support_directory="Application\ Support"
+libre_office_macros_filepath=~/Library/$application_support_directory/LibreOffice/4/user/basic/Standard
+libre_office_macro_template_filepath=$libre_office_macros_filepath/$libre_office_macro
+
 # APPLICATION DEFAULTS
-application_name=svg-to-ppt
-application_directory=~/$application_name
+application_directory=$PWD/$application_name
 output_directory=$application_directory/Output
 template_ppt=template.ppt
 template_ppt_filepath=$application_directory/$template_ppt
-bash_script=svgtoppt
-bash_script_filepath=/usr/local/bin/$bash_script
-application_config_file_filepath=~/.$application_name
 stop_creations=false
+force_ppt=false
+where_to_open=keynote
 
 # TEXT FORMATS
 txtund=$(tput sgr 0 1) # Underline
@@ -25,9 +41,9 @@ white=$(tput setaf 7)
 
 # TEXT COMBINATIONS
 bldred=${txtbld}$red
-bldblu=${txtbld}$blue
-bldwht=${txtbld}$white
+bldylw=${txtbld}$yellow
 bldcyn=${txtbld}$cyan
+bldwht=${txtbld}$white
 
 print_text_options() {
   echo -e "$(tput bold) reg  bld  und   tput-command-colors$(tput sgr0)"
@@ -45,13 +61,13 @@ print_text_options() {
 # EMOJIS
 brew="🍺"
 checkmark="✅"
-dir="📁"
 exclamation="❗️"
 libre="📄"
 octo="🐙"
 svg="🖌 "
 swirl="🌀"
-warning="⚠️ "
+trash="🗑 "
+warn="⚠️ "
 x_mark="❌"
 
 # HELPER FUNCTIONS
@@ -65,11 +81,11 @@ echo_success() {
 }
 
 echo_already_exists() {
-  echo $yellow"$warning Warning: Skipped $1 of $2 as it already exists: $bldwht$3$txtrst"
+  echo $yellow"$warn Warning: ${1^} already exists: $bldwht$2$txtrst"
 }
 
 echo_already_installed() {
-  echo $blue"$swirl Warning: Skipped installation of $1 as it's already installed: $2$txtrst"
+  echo $blue"$swirl Note: Skipped installation of $1 as it's already installed: $2$txtrst"
 }
 
 echo_failed() {
@@ -90,6 +106,7 @@ echo_var() {
 
 echo_breakpoint() {
   var_name=$1
+  echo
   echo_var $var_name
 
   echo_debug "$2 not $3" "$3"
@@ -101,9 +118,60 @@ echo_breakpoint() {
     "1") eval "$var_name"="$5" ;;
     "2") exit 1 ;;
   esac
+  echo
 }
 
-output_code() { return "$1"; }
+# Checks whether an application is installed
+# Credit: https://stackoverflow.com/a/12900116
+whichapp() {
+  local appNameOrBundleId=$1 isAppName=0 bundleId
+
+  # Determine whether an app *name* or *bundle id* was specified
+  [[ $appNameOrBundleId =~ \.[aA][pP][pP]$ || $appNameOrBundleId =~ ^[^.]+$ ]] && isAppName=1
+  if ((isAppName)); then
+    # An application NAME was specified
+
+    # Translate to a bundle id first
+    bundleId=$(osascript -e "id of application \"$appNameOrBundleId\"" 2> /dev/null) ||
+      {
+        return 1
+      }
+  else # a bundle id was specified
+    bundleId=$appNameOrBundleId
+  fi
+
+  # Let AppleScript determine the full bundle path
+  fullPath=$(osascript -e "tell application \"Finder\" to POSIX path of (get application file id \"$bundleId\" as alias)" 2> /dev/null ||
+    {
+      echo "$FUNCNAME: ERROR: Application with specified bundle ID not found: $bundleId" 1>&2
+      return 1
+    })
+  printf '%s\n' "$fullPath"
+
+  # Warn about /Volumes/... paths, because applications launched from mounted devices aren't persistently installed
+  if [[ $fullPath == /Volumes/* ]]; then
+    echo "NOTE: Application is not persistently installed, due to being located on a mounted volume." >&2
+  fi
+}
+
+# Checks if Libre Office is installed
+# Returns 0 for not found, 1 for found
+check_libre_office_installed() {
+  local description="Libre Office"
+
+  libre_office_location=$(whichapp "LibreOffice")
+
+  if [[ -z "$libre_office_location" ]]; then
+    local found=0
+  else
+    local found=1
+    echo_already_installed "$description" $libre_office_location
+  fi
+
+  # echo_breakpoint found "$description" "found" 0 1
+
+  return $found
+}
 
 # Creates directories and files necessary for the application to run
 install_basic() (
@@ -121,56 +189,35 @@ install_basic() (
     return $found
   }
 
-  # Creates a directory
-  create_directory() {
-    echo "$dir Creating directory: $1"
-    if [ "$stop_creations" != true ]; then
-      mkdir $1
-    fi
-    local exit_code=$?
+  # Check if the application directory already exists
+  validate_application_directory_missing() {
+    local description="application directory"
+    check_directory_missing $application_directory "$description"
+    exit_code=$?
 
-    # echo_breakpoint exit_code "$2" "created" false true
+    # echo_breakpoint exit_code "$description" "found" 0 1
 
-    if [[ $? -eq 1 ]]; then
-      echo_failed "create $2: $bldwht$1"
-      exit 1
-    else
-      echo_success "${2^} created"
-    fi
-  }
+    if [[ $exit_code -eq 1 ]]; then
+      echo_already_exists "$description" $application_directory
+      printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
 
-  # Checks if wget is installed
-  # Returns 0 for not found, 1 for found
-  check_wget_installed() {
-    local wget_location=$(command -v wget)
+      local input
+      read input
 
-    # echo_breakpoint wget_location "wget" "found" "" 1
+      case $input in
+        "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
+        "1") exit 1 ;;
+      esac
+      echo
 
-    if [ -z $wget_location ]; then
-      return 0
-    else
-      echo_already_installed "wget" $wget_location
-      return 1
-    fi
-  }
+      if [ "$stop_creations" != true ]; then
+        rm -rf $application_directory
 
-  # Installs wget
-  install_wget() {
-    local wget_install_cmd="brew install wget"
-    echo "Starting wget installation: $(tput sgr 0 1)$wget_install_cmd$txtrst"
-
-    if [ "$stop_creations" != true ]; then
-      eval $wget_install_cmd
-    fi
-    local exit_code=$?
-
-    # echo_breakpoint exit_code "wget" "install" false true
-
-    if [[ $exit_code -eq 0 ]]; then
-      echo_error "installing wget with Homebrew"
-      exit 1
-    else
-      echo_success "wget installed"
+        if [[ $? -ne 0 ]]; then
+          echo_error "delete $description" $application_directory
+          exit 1
+        fi
+      fi
     fi
   }
 
@@ -183,97 +230,287 @@ install_basic() (
       local found=0
     fi
 
-    # echo_breakpoint found "$2" "found" 0 1
+    # echo_breakpoint found $1 "found" 0 1
 
     return $found
   }
 
-  # Fetches a remote file
-  fetch_remote_file() {
-    echo "$octo Pulling down $2 from GitHub to directory: $1"
+  validate_bash_script_missing() {
+    local description="Bash script"
+    check_file_missing $bash_script_filepath
+    exit_code=$?
 
-    file_parent_directory=${1%/*}
-    if [ "$stop_creations" != true ]; then
-      /usr/local/bin/wget -P $file_parent_directory $3
+    # echo_breakpoint exit_code "$description" "found" 0 1
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_already_exists "$description" $bash_script_filepath
+      printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
+
+      local input
+      read input
+      case $input in
+        "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
+        "1") exit 1 ;;
+      esac
+      echo
+
+      if [ "$stop_creations" != true ]; then
+        rm $bash_script_filepath
+
+        if [[ $? -ne 0 ]]; then
+          echo_error "delete $description" $bash_script_filepath
+          exit 1
+        fi
+      fi
     fi
-    local exit_code=$?
+  }
 
-    # echo_breakpoint exit_code $2 "fetched" 1 0
+  validate_libre_office_macro_missing() {
+    local description="Libre Office macro"
+    check_file_missing $libre_office_macro_template_filepath
+    exit_code=$?
 
-    if [[ $exit_code -eq 1 ]]; then
-      echo_failed "pull down $2 file from GitHub"
-      exit 1
-    else
-      echo_success "${2^} created: $1"
+    # echo_breakpoint exit_code "$description" "found" 0 1
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_already_exists "$description" $libre_office_macro_template_filepath
+      printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
+
+      local input
+      read input
+      case $input in
+        "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
+        "1") exit 1 ;;
+      esac
+      echo
+
+      if [ "$stop_creations" != true ]; then
+        rm $libre_office_macro_template_filepath
+
+        if [[ $? -ne 0 ]]; then
+          echo_error "deleting $description" $libre_office_macro_template_filepath
+          exit 1
+        fi
+      fi
     fi
   }
 
-  # Creates the application configuration file
-  create_application_config_file() {
+  # Checks if wget is installed
+  # Returns 0 for not found, 1 for found
+  check_wget_installed() {
+    local description="wget"
+
+    local wget_location=$(command -v wget)
+
+    # echo_breakpoint wget_location "$description" "found" "" 1
+
+    if [ -z $wget_location ]; then
+      return 0
+    else
+      echo_already_installed "$description" $wget_location
+      return 1
+    fi
+  }
+
+  # Installs wget
+  install_wget() {
+    local description="wget"
+
+    local wget_install_cmd="brew install wget"
+    echo "Starting wget installation: $(tput sgr 0 1)$wget_install_cmd$txtrst"
+
     if [ "$stop_creations" != true ]; then
-      touch $application_config_file_filepath
+      eval $wget_install_cmd
     fi
     local exit_code=$?
 
-    # echo_breakpoint exit_code "application config file" "created" 0 1
+    # echo_breakpoint exit_code "wget" "installed" 1 0
 
-    if [[ $exit_code -eq 1 ]]; then
-      echo_error "creating application config file"
-      exit 1
+    if [[ $exit_code -eq 0 ]]; then
+      echo_success "$description installed"
     else
-      echo_success "Application config file created"
+      echo_error "installing $description with Homebrew"
+      exit 1
     fi
   }
+
+  # Creates the application directory
+  create_application_directory() {
+    local description="application directory"
+
+    echo "$octo Fetching $description from GitHub"
+    if [ "$stop_creations" != true ]; then
+      remote_url="https://github.com/SVGtoPPT/svg-to-ppt/archive/$version.zip"
+      mkdir $application_directory && curl -L $remote_url | tar xz --strip 1 -C $application_name
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "created" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      echo_success "${description^} created"
+
+      if [ "$stop_creations" != true ]; then
+        mv $application_directory/src/* $application_directory
+        rm -rf $application_directory/*/
+        mkdir $output_directory
+      fi
+    else
+      echo_failed "create $description: $bldwht$application_directory"
+      exit 1
+    fi
+  }
+
+  # Moves the application's Bash script to the appropriate location
+  move_bash_script() {
+    local description="Bash script"
+
+    if [ "$stop_creations" != true ]; then
+      mv "$application_directory/$bash_script.sh" $bash_script_filepath
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "moved" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      echo_success "${description^} moved"
+    else
+      echo_failed "move $description"
+      exit 1
+    fi
+  }
+
+  update_bash_script_access() {
+    local description="access to Bash script"
+
+    if [ "$stop_creations" != true ]; then
+      chmod +x $bash_script_filepath
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "changed" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      echo_success "${description^} updated"
+    else
+      echo_failed "change $description"
+      exit 1
+    fi
+  }
+
+  move_libre_office_macro_template() {
+    local description="Libre Office macro"
+
+    if [ "$stop_creations" != true ]; then
+      local source="$application_directory/$libre_office_macro_template"
+      local target=$libre_office_macro_template_filepath
+      local move="mv $source $target"
+      eval $move
+    fi
+    exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "moved" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      echo_success "${description^} moved"
+    else
+      echo_error "moving $description"
+      exit 1
+    fi
+  }
+
+  move_application_config_file() {
+    local description="application config file"
+
+    if [ "$stop_creations" != true ]; then
+      local source="$application_directory/$application_config_file"
+      local target=$application_config_file_filepath
+      local move="mv $source $target"
+      eval $move
+    fi
+    exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "moved" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      echo_success "${description^} moved"
+    else
+      echo_error "moving $description"
+      exit 1
+    fi
+  }
+
+  update_application_preferences_file() {
+    local description="application preferences file"
+
+    if [ "$stop_creations" != true ]; then
+      local current_filepath="$application_directory/$application_preferemces_file"
+
+      # Add application directory to preferences file
+      echo "application_directory=$application_directory" | cat - $current_filepath > temp && mv temp $current_filepath
+    fi
+    exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "updated" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      echo_success "${description^} updated"
+    else
+      echo_error "updating $description"
+      exit 1
+    fi
+  }
+
+  move_application_preferences_file() {
+    local description="application preferences file"
+
+    if [ "$stop_creations" != true ]; then
+      local source="$application_directory/$application_preferemces_file"
+      local target=$application_preferences_file_filepath
+      local move="mv $source $target"
+      eval $move
+    fi
+    exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "moved" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      echo_success "${description^} moved"
+    else
+      echo_error "moving $description"
+      exit 1
+    fi
+  }
+
+  # Start
 
   if [ "$1" == true ]; then
     echo "$svg Starting basic installation of SVG to PPT"
     echo
   fi
 
-  local description="application directory"
-  check_directory_missing $application_directory "$description"
+  validate_application_directory_missing
+  validate_bash_script_missing
+  validate_libre_office_macro_missing
+
+  check_wget_installed
   if [[ $? -eq 0 ]]; then
-    create_directory $application_directory "$description"
-  else
-    echo_already_exists "creation" "$description" $application_directory
+    install_wget
   fi
 
-  local description="output directory"
-  check_directory_missing $output_directory "$description"
-  if [[ $? -eq 0 ]]; then
-    create_directory $output_directory "$description"
-  else
-    echo_already_exists "creation" "$description" $output_directory
-  fi
+  create_application_directory
 
-  local description="template PPT"
-  check_file_missing $template_ppt_filepath "$description"
-  if [[ $? -eq 0 ]]; then
-    local output_filepath=$template_ppt_filepath
-    local remote_url=https://github.com/SVGtoPPT/svg-to-ppt/raw/main/src/template.ppt
-    fetch_remote_file $output_filepath "$description" $remote_url
-  else
-    echo_already_exists "fetch" "$description" $template_ppt_filepath
-  fi
+  move_bash_script
+  update_bash_script_access
 
-  local description="Bash script file"
-  check_file_missing $bash_script_filepath "$description"
-  if [[ $? -eq 0 ]]; then
-    local output_filepath=$bash_script_filepath
-    local remote_url=https://raw.githubusercontent.com/SVGtoPPT/svg-to-ppt/main/src/svgtoppt.sh
-    fetch_remote_file $output_filepath "$description" $remote_url
-    mv "$bash_script_filepath.sh" $bash_script_filepath
-    chmod +x $bash_script_filepath
-  else
-    echo_already_exists "fetch" "$description" $bash_script_filepath
-  fi
+  move_libre_office_macro_template
 
-  check_file_missing $application_config_file_filepath "application config file"
-  if [[ $? -eq 0 ]]; then
-    create_application_config_file
-  else
-    echo_already_exists "creation" "application config file" $application_config_file_filepath
-  fi
+  move_application_config_file
+
+  update_application_preferences_file
+  move_application_preferences_file
+
+  find $application_directory -type f -not -name "$template_ppt" -delete
 
   echo
   echo_success $txtbld"SVG to PPT installed"
@@ -281,64 +518,22 @@ install_basic() (
 
 # Installs Homebrew (if needed) and Libre Office, then executes a basic install
 install_complete() (
-  # Checks whether an application is installed
-  # Credit: https://stackoverflow.com/a/12900116
-  whichapp() {
-    local appNameOrBundleId=$1 isAppName=0 bundleId
-    # Determine whether an app *name* or *bundle id* was specified
-    [[ $appNameOrBundleId =~ \.[aA][pP][pP]$ || $appNameOrBundleId =~ ^[^.]+$ ]] && isAppName=1
-    if ((isAppName)); then # an application NAME was specified
-      # Translate to a bundle id first
-      bundleId=$(osascript -e "id of application \"$appNameOrBundleId\"" 2> /dev/null) ||
-        {
-          return 1
-        }
-    else # a bundle id was specified
-      bundleId=$appNameOrBundleId
-    fi
-    # Let AppleScript determine the full bundle path
-    fullPath=$(osascript -e "tell application \"Finder\" to POSIX path of (get application file id \"$bundleId\" as alias)" 2> /dev/null ||
-      {
-        echo "$FUNCNAME: ERROR: Application with specified bundle ID not found: $bundleId" 1>&2
-        return 1
-      })
-    printf '%s\n' "$fullPath"
-    # Warn about /Volumes/... paths, because applications launched from mounted devices aren't persistently installed
-    if [[ $fullPath == /Volumes/* ]]; then
-      echo "NOTE: Application is not persistently installed, due to being located on a mounted volume." >&2
-    fi
-  }
-
-  # Checks if Libre Office is installed
-  # Returns 0 for not found, 1 for found
-  check_libre_office_installed() {
-    local description="Libre Office"
-    libre_office_location=$(whichapp "LibreOffice")
-
-    # echo_breakpoint libre_office_location $description "found" "" true
-
-    if [[ -z "$libre_office_location" ]]; then
-      return 0
-    else
-      echo_already_installed $description $libre_office_location
-      return 1
-    fi
-  }
-
   # Checks if Homebrew is installed
   # Returns 0 for not found, 1 for found
   check_homebrew_installed() {
     local description="Homebrew"
     local homebrew_location=$(command -v brew)
 
-    # echo_breakpoint homebrew_location $description "found" "" true
-
     if [ -z $homebrew_location ]; then
-      return 0
+      local found=0
     else
-      echo_already_installed $description $homebrew_location
-      return 1
+      local found=1
+      echo_already_installed "$description" $homebrew_location
     fi
+
+    # echo_breakpoint found "$description" "found" 0 1
+
+    return $found
   }
 
   # Installs Homebrew
@@ -352,7 +547,7 @@ install_complete() (
     fi
     local exit_code=$?
 
-    # echo_breakpoint homebrew_location $description "install" 0 1
+    # echo_breakpoint homebrew_location "$description" "install" 0 1
 
     if [[ $exit_code -ne 0 ]]; then
       echo_error "installing $description"
@@ -373,7 +568,7 @@ install_complete() (
     fi
     local exit_code=$?
 
-    # echo_breakpoint homebrew_location $description "install" 0 1
+    # echo_breakpoint homebrew_location "$description" "install" 0 1
 
     if [[ $exit_code -ne 0 ]]; then
       echo_error "installing $description with Homebrew"
@@ -407,26 +602,21 @@ install_complete() (
 install_type=$1
 
 # Check for flags overwriting defaults
-while getopts "a:f:i:o:p:t:w:dx" option; do
+while getopts "a:i:dx" option; do
   case "${option}" in
     a) application_directory=${OPTARG} ;;
-    f) force_ppt=${OPTARG} ;;
     i) install_type=${OPTARG} ;;
-    o) output_directory=${OPTARG} ;;
-    p) ppt_name=${OPTARG} ;;
-    t) template_ppt=${OPTARG} ;;
-    w) where_to_open=${OPTARG} ;;
     d) debug=true ;;
     x) stop_creations=true ;;
   esac
 done
 
 # Valides install_type and routes to install functions
-case $install_type in
-  basic) install_basic true ;;
-  complete) install_complete ;;
+case "$install_type" in
+  "basic") install_basic true ;;
+  "complete") install_complete ;;
   *)
     echo "Input error: \"$install_type\" is not a valid install type; should only be: basic, complete"
     exit 2
-    ;;
+  ;;
 esac
