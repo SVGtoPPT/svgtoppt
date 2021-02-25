@@ -1,8 +1,5 @@
 name: Add latest tag to new release
-on:
-  push:
-    tags:
-      - '*'
+on: [push]
 
 jobs:
   run:
