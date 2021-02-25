@@ -13,11 +13,11 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     - name: Latest tag
-    # You may pin to the exact commit or the version.
-    # uses: EndBug/latest-tag@6d22a6738f5c33059e3a8c6ca5dcf8eaf8a14599
-    uses: EndBug/latest-tag@v1.4.0
-    with:
-      # Tag description
-      description: # optional
-      # Tag name
-      tag-name: # optional, default is latest
+      # You may pin to the exact commit or the version.
+      # uses: EndBug/latest-tag@6d22a6738f5c33059e3a8c6ca5dcf8eaf8a14599
+      uses: EndBug/latest-tag@v1.4.0
+      with:
+        # Tag description
+        description: # optional
+        # Tag name
+        tag-name: # optional, default is latest
