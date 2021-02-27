@@ -518,6 +518,7 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
   update_application_preferences_file
   move_application_preferences_file
   find $application_directory -type f -not -name "$template_ppt" -delete
+  rm -rf $application_directory/.* 2>/dev/null
 
   echo
   echo_success $txtbld"SVG to PPT installed"
