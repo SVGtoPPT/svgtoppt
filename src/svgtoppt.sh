@@ -197,9 +197,18 @@ main() {
 
       ppt_filepath=$output_directory/$ppt_name$ppt_name_suffix$ppt_file_ext
     done
-    printf $yellow"$warn Warning: $ppt_name$ppt_file_ext already exists, so creating new file $ppt_name$ppt_name_suffix$ppt_file_ext in directory: $output_directory$txtrst\n"
+
+    if [ "$stop_creations" != true ]; then
+      printf $yellow"$warn Warning: $ppt_name$ppt_file_ext already exists, so creating new file $ppt_name$ppt_name_suffix$ppt_file_ext in directory: $output_directory$txtrst\n"
+    fi
+  elif [ "$force_ppt" == true ] && [ -f $ppt_filepath ]; then
+    if [ "$stop_creations" != true ]; then
+      printf "Overwriting file: $ppt_filepath\n"
+    fi
   else
-    printf "Creating new file: $ppt_filepath\n"
+    if [ "$stop_creations" != true ]; then
+      printf "Creating new file: $ppt_filepath\n"
+    fi
   fi
 
   # Copy the template to create/overwrite macro file to be used
@@ -249,10 +258,14 @@ main() {
     fi
   fi
 
+  if [ "$stop_creations" != true ]; then
     echo_success "File created: $ppt_filepath"
+  fi
 }
 
 reset_preferences() {
+  local description="application preferences"
+
   local remote_url="https://raw.githubusercontent.com/SVGtoPPT/svgtoppt/$version/src/svgtoppt-preferences"
   local preferences_curl="curl -L $remote_url > $application_preferences_file_filepath"
 
@@ -263,13 +276,48 @@ reset_preferences() {
 
   if [ "$stop_creations" != true ]; then
     eval $preferences_curl
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "reset" 1 0
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_failed "reset $description"
+    fi
 
     # Add output_directory and template PPT filepath to preferences file
     printf "output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp && mv temp $current_filepath
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "update" 1 0
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_failed "update $description"
+    fi
   fi
 
   echo_success "Preferences reset"
   exit
+}
+
+update_preferences() {
+  local description="application preferences"
+
+  echo "output_directory=$output_directory
+template_ppt_filepath=$template_ppt_filepath
+input_svg=$input_svg
+ppt_name=$ppt_name
+force_ppt=$force_ppt
+where_to_open=$where_to_open" > $application_preferences_file_filepath
+
+  local exit_code=$?
+
+  # echo_breakpoint exit_code "$description" "update" 1 0
+
+  if [[ $exit_code -ne 0 ]]; then
+    echo_failed "update $description"
+  fi
+
+  echo_success "Preferences updated"
 }
 
 description="application config file"
@@ -322,12 +370,7 @@ elif [ "$first_parameter" == "reset_pref" ]; then
   reset_preferences
 else
   if [ "$save_preferences" == true ]; then
-    echo "output_directory=$output_directory
-template_ppt_filepath=$template_ppt_filepath
-input_svg=$input_svg
-ppt_name=$ppt_name
-force_ppt=$force_ppt
-where_to_open=$where_to_open" > $application_preferences_file_filepath
+    update_preferences
   fi
 
   main
