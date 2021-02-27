@@ -288,15 +288,14 @@ elif [ "$first_parameter" == "reset_pref" ]; then
   exit
 else
   if [ "$save_preferences" == true ]; then
-    echo "application_directory=$application_directory
-
-input_svg=$input_svg
+    echo "output_directory=$output_directory
 template_ppt_filepath=$template_ppt_filepath
+input_svg=$input_svg
+template_ppt_filepath=$application_directory/template.ppt
 
-ppt_name=
+ppt_name=$ppt_name
 force_ppt=$force_ppt
-output_directory=$output_directory
-where_to_open=$where_to_open" > $application_preferences_file_filepath
+where_to_open=$where_to_opoen" > $application_preferences_file_filepath
   fi
 
   main
