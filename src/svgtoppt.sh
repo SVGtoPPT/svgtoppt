@@ -253,7 +253,7 @@ main() {
 }
 
 reset_preferences() {
-  local remote_url="https://raw.githubusercontent.com/SVGtoPPT/svg-to-ppt/$version/src/svgtoppt-preferences"
+  local remote_url="https://raw.githubusercontent.com/SVGtoPPT/svgtoppt/$version/src/svgtoppt-preferences"
   local preferences_curl="curl -L $remote_url > $application_preferences_file_filepath"
 
   if [ "$debug" == true ]; then
