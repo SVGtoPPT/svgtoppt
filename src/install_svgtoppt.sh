@@ -198,17 +198,19 @@ install_basic() (
     # echo_breakpoint exit_code "$description" "found" 0 1
 
     if [[ $exit_code -eq 1 ]]; then
-      echo_already_exists "$description" $application_directory
-      printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
+      if [ "$reinstall" != true ]; then
+        echo_already_exists "$description" $application_directory
+        printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
 
-      local input
-      read input
+        local input
+        read input
 
-      case $input in
-        "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
-        "1") exit 1 ;;
-      esac
-      echo
+        case $input in
+          "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
+          "1") exit 1 ;;
+        esac
+        echo
+      fi
 
       if [ "$stop_creations" != true ]; then
         rm -rf $application_directory
@@ -243,16 +245,18 @@ install_basic() (
     # echo_breakpoint exit_code "$description" "found" 0 1
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_already_exists "$description" $bash_script_filepath
-      printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
+      if [ "$reinstall" != true ]; then
+        echo_already_exists "$description" $bash_script_filepath
+        printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
 
-      local input
-      read input
-      case $input in
-        "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
-        "1") exit 1 ;;
-      esac
-      echo
+        local input
+        read input
+        case $input in
+          "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
+          "1") exit 1 ;;
+        esac
+        echo
+      fi
 
       if [ "$stop_creations" != true ]; then
         rm $bash_script_filepath
@@ -273,16 +277,18 @@ install_basic() (
     # echo_breakpoint exit_code "$description" "found" 0 1
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_already_exists "$description" $libre_office_macro_template_filepath
-      printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
+      if [ "$reinstall" != true ]; then
+        echo_already_exists "$description" $libre_office_macro_template_filepath
+        printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
 
-      local input
-      read input
-      case $input in
-        "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
-        "1") exit 1 ;;
-      esac
-      echo
+        local input
+        read input
+        case $input in
+          "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
+          "1") exit 1 ;;
+        esac
+        echo
+      fi
 
       if [ "$stop_creations" != true ]; then
         rm $libre_office_macro_template_filepath
@@ -603,10 +609,11 @@ install_complete() (
 install_type=$1
 
 # Check for flags overwriting defaults
-while getopts "a:i:dx" option; do
+while getopts "a:i:drx" option; do
   case "${option}" in
     a) application_directory=${OPTARG} ;;
     i) install_type=${OPTARG} ;;
+    r) reinstall=true ;;
     d) debug=true ;;
     x) stop_creations=true ;;
   esac

@@ -252,6 +252,26 @@ main() {
     echo_success "File created: $ppt_filepath"
 }
 
+reset_preferences() {
+  local remote_url="https://raw.githubusercontent.com/SVGtoPPT/svg-to-ppt/$version/src/svgtoppt-preferences"
+  local preferences_curl="curl -L $remote_url > $application_preferences_file_filepath"
+
+  if [ "$debug" == true ]; then
+    echo_var remote_url
+    echo_var preferences_curl
+  fi
+
+  if [ "$stop_creations" != true ]; then
+    eval $preferences_curl
+
+    # Add output_directory and template PPT filepath to preferences file
+    printf "output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp && mv temp $current_filepath
+  fi
+
+  echo_success "Preferences reset"
+  exit
+}
+
 description="application config file"
 source $application_config_file_filepath
 exit_code=$?
@@ -299,45 +319,35 @@ elif [ "$print_version" == true ]; then
   echo "$application_name $version"
   exit
 elif [ "$first_parameter" == "reset_pref" ]; then
-  echo_var application_directory
-  remote_url="https://raw.githubusercontent.com/SVGtoPPT/svg-to-ppt/$version/src/svgtoppt-preferences"
-  curl="curl -L $remote_url > $application_preferences_file_filepath"
-  eval $curl
-
-  printf "output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp && mv temp $current_filepath
-
-  echo_success "Preferences reset"
-  exit
+  reset_preferences
 else
   if [ "$save_preferences" == true ]; then
     echo "output_directory=$output_directory
 template_ppt_filepath=$template_ppt_filepath
 input_svg=$input_svg
-template_ppt_filepath=$application_directory/template.ppt
-
 ppt_name=$ppt_name
 force_ppt=$force_ppt
-where_to_open=$where_to_opoen" > $application_preferences_file_filepath
+where_to_open=$where_to_open" > $application_preferences_file_filepath
   fi
 
   main
 fi
 
 if [ "$debug" == true ]; then
-  printf $bldcyn"\n~OUTPUT FOR DEBUGGING~\n\n"
+  printf $bldcyn"\n~OUTPUT FOR DEBUGGING~\n\n"$txtrst
 
-  printf "\n# INPUT\n"
+  printf $bldcyn"\n# INPUT\n"$txtrst
   echo_var input_svg
   echo_var svg_name_with_ext
   echo_var svg_name
   echo_var svg_filepath
 
-  printf "\n# LIBRE OFFICE\n"
+  printf $bldcyn"\n# LIBRE OFFICE\n"$txtrst
   echo_var stop_creations
   echo_var application_config_file_filepath
   echo_var libre_office_cmd
 
-  printf "\n# OUTPUT\n"
+  printf $bldcyn"\n# OUTPUT\n"$txtrst
   echo_var output_directory
   echo_var template_ppt_filepath
   echo_var ppt_name
