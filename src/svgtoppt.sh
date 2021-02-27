@@ -71,10 +71,6 @@ echo_already_exists() {
   echo $yellow"$warn Warning: ${1^} already exists: $bldwht$2$txtrst"
 }
 
-echo_already_installed() {
-  echo $blue"$swirl Note: Skipped installation of $1 as it's already installed: $2$txtrst"
-}
-
 echo_failed() {
   echo $bldred"$x_mark Failure: Couldn't $1$txtrst"
 }
@@ -115,7 +111,7 @@ exit_code=$?
 # echo_breakpoint exit_code "$description" "found" 1 0
 
 if [[ $exit_code -ne 0 ]]; then
-  echo_error "Couldn't find $description"
+  echo_failed "find $description"
 fi
 
 description="application preferences file"
@@ -125,7 +121,7 @@ exit_code=$?
 # echo_breakpoint exit_code "$description" "found" 1 0
 
 if [[ $exit_code -ne 0 ]]; then
-  echo_error "Couldn't find $description"
+  echo_failed "find $description"
 fi
 
 main() {
@@ -147,24 +143,26 @@ main() {
     printf "\n~END~\n\n"$txtrst
   fi
 
-  # Check if first parameter ends in .svg
-  if [[ "$input_svg" != *"$svg_file_ext" ]]; then
-    echo "Input error: SVG file not passed in as the first parameter or using the -i flag"
-    exit 2
-  fi
-
   # Remove file extension from ppt_name if present
   if [[ "$ppt_name" == *"$ppt_file_ext" ]]; then
     IFS='.' read -r ppt_name string <<<"$ppt_name"
   fi
 
   # Check if SVG file exists
-  if test -f $PWD/$input_svg; then
-    svg_filepath=$PWD/$input_svg
+  if test -f $first_parameter && [ ! -z $first_parameter ]; then
+    svg_filepath=$first_parameter
   elif test -f $input_svg; then
     svg_filepath=$input_svg
+  elif test -f $PWD/$input_svg; then
+    svg_filepath=$PWD/$input_svg
   else
-    echo "Input error: Can't find SVG file $input_svg"
+    echo_failed "input SVG file: $input_svg"
+    exit 2
+  fi
+
+  # Check if SVG extension is present
+  if [[ "$svg_filepath" != *"$svg_file_ext" ]]; then
+    echo_failed "find '$svg_file_ext' at the end of the input file: $bldwht$svg_filepath$txtrst"
     exit 2
   fi
 
@@ -219,7 +217,7 @@ main() {
 
       ppt_filepath=$output_directory/$ppt_name$ppt_name_suffix$ppt_file_ext
     done
-    printf "$ppt_name$ppt_file_ext already exists in $output_directory, so creating new file $ppt_name$ppt_name_suffix$ppt_file_ext\n"
+    printf $yellow"$warn Warning: $ppt_name$ppt_file_ext already exists, so creating new file $ppt_name$ppt_name_suffix$ppt_file_ext in directory: $output_directory$txtrst\n"
   else
     printf "Creating new file: $ppt_filepath\n"
   fi
@@ -247,17 +245,17 @@ main() {
       open_cmd="open -a $where_to_open $ppt_filepath"
       eval $open_cmd
     fi
+
+    echo_success "File created: $ppt_filepath"
   fi
 }
 
 # First parameter should be SVG file if no flags are passed
-input_svg=$1
+first_parameter=$1
 
 # Check for flags overwriting defaults
-while getopts "a:f:i:o:p:t:w:dhvx" option; do
+while getopts "f:i:o:p:t:w:dhsvx" option; do
   case "${option}" in
-    a) application_directory=${OPTARG} ;;
-    h) help=true ;;
     f) force_ppt=${OPTARG} ;;
     i) input_svg=${OPTARG} ;;
     o) output_directory=${OPTARG} ;;
@@ -265,7 +263,9 @@ while getopts "a:f:i:o:p:t:w:dhvx" option; do
     t) template_ppt=${OPTARG} ;;
     w) where_to_open=${OPTARG} ;;
     d) debug=true ;;
-    v) print_version=true;;
+    h) help=true ;;
+    s) save_preferences=true ;;
+    v) print_version=true ;;
     x) stop_creations=true ;;
   esac
 done
@@ -276,17 +276,36 @@ if [ "$help" == true ]; then
 elif [ "$print_version" == true ]; then
   echo "$application_name $version"
   exit
+elif [ "$first_parameter" == "reset_pref" ]; then
+  echo_var application_directory
+  remote_url="https://raw.githubusercontent.com/SVGtoPPT/svg-to-ppt/$version/src/svgtoppt-preferences"
+  curl="curl -L $remote_url > $application_preferences_file_filepath"
+  eval $curl
+
+  printf "output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp && mv temp $current_filepath
+
+  echo_success "Preferences reset"
+  exit
 else
+  if [ "$save_preferences" == true ]; then
+    echo "application_directory=$application_directory
+
+input_svg=$input_svg
+template_ppt_filepath=$template_ppt_filepath
+
+ppt_name=
+force_ppt=$force_ppt
+output_directory=$output_directory
+where_to_open=$where_to_open" > $application_preferences_file_filepath
+  fi
+
   main
 fi
 
 if [ "$debug" == true ]; then
   printf $bldcyn"\n~OUTPUT FOR DEBUGGING~\n\n"
-  printf "# DEFAULTS\n"
-  echo_var application_directory
-  echo_var output_directory
 
-  printf "\n# SVG\n"
+  printf "\n# INPUT\n"
   echo_var input_svg
   echo_var svg_name_with_ext
   echo_var svg_name
@@ -297,7 +316,8 @@ if [ "$debug" == true ]; then
   echo_var application_config_file_filepath
   echo_var libre_office_cmd
 
-  printf "\n# PPT\n"
+  printf "\n# OUTPUT\n"
+  echo_var output_directory
   echo_var template_ppt_filepath
   echo_var ppt_name
   echo_var ppt_name_suffix

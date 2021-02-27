@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha10
+version=1.0.0-alpha11
 application_name=svgtoppt
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
@@ -132,7 +132,7 @@ whichapp() {
     # An application NAME was specified
 
     # Translate to a bundle id first
-    bundleId=$(osascript -e "id of application \"$appNameOrBundleId\"" 2> /dev/null) ||
+    bundleId=$(osascript -e "id of application \"$appNameOrBundleId\"" 2>/dev/null) ||
       {
         return 1
       }
@@ -141,7 +141,7 @@ whichapp() {
   fi
 
   # Let AppleScript determine the full bundle path
-  fullPath=$(osascript -e "tell application \"Finder\" to POSIX path of (get application file id \"$bundleId\" as alias)" 2> /dev/null ||
+  fullPath=$(osascript -e "tell application \"Finder\" to POSIX path of (get application file id \"$bundleId\" as alias)" 2>/dev/null ||
     {
       echo "$FUNCNAME: ERROR: Application with specified bundle ID not found: $bundleId" 1>&2
       return 1
@@ -214,7 +214,7 @@ install_basic() (
         rm -rf $application_directory
 
         if [[ $? -ne 0 ]]; then
-          echo_error "delete $description" $application_directory
+          echo_error "deleting $description" $application_directory
           exit 1
         fi
       fi
@@ -258,7 +258,7 @@ install_basic() (
         rm $bash_script_filepath
 
         if [[ $? -ne 0 ]]; then
-          echo_error "delete $description" $bash_script_filepath
+          echo_error "deleting $description" $bash_script_filepath
           exit 1
         fi
       fi
@@ -446,8 +446,9 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       local current_filepath="$application_directory/$application_preferemces_file"
 
-      # Add application directory to preferences file
-      echo "application_directory=$application_directory" | cat - $current_filepath > temp && mv temp $current_filepath
+      # Add output_directory and template PPT filepath to preferences file
+      echo "output_directory=$output_directory
+template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp && mv temp $current_filepath
     fi
     exit_code=$?
 
@@ -509,7 +510,6 @@ install_basic() (
 
   update_application_preferences_file
   move_application_preferences_file
-
   find $application_directory -type f -not -name "$template_ppt" -delete
 
   echo
@@ -618,5 +618,5 @@ case "$install_type" in
   *)
     echo "Input error: \"$install_type\" is not a valid install type; should only be: basic, complete"
     exit 2
-  ;;
+    ;;
 esac

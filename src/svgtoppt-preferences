@@ -1,5 +1,6 @@
-output_directory=$application_directory/Output
+input_svg=
 template_ppt_filepath=$application_directory/template.ppt
-stop_creations=false
+
+ppt_name=
 force_ppt=false
 where_to_open=keynote
