@@ -1,6 +1,4 @@
 input_svg=
-template_ppt_filepath=$application_directory/template.ppt
-
 ppt_name=
 force_ppt=false
 where_to_open=keynote

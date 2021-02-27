@@ -104,26 +104,6 @@ echo_breakpoint() {
   echo
 }
 
-description="application config file"
-source $application_config_file_filepath
-exit_code=$?
-
-# echo_breakpoint exit_code "$description" "found" 1 0
-
-if [[ $exit_code -ne 0 ]]; then
-  echo_failed "find $description"
-fi
-
-description="application preferences file"
-source $application_preferences_file_filepath
-exit_code=$?
-
-# echo_breakpoint exit_code "$description" "found" 1 0
-
-if [[ $exit_code -ne 0 ]]; then
-  echo_failed "find $description"
-fi
-
 main() {
   if [ "$debug" == true ]; then
     printf $bldcyn"\n~INPUT FOR DEBUGGING~\n\n"
@@ -222,33 +202,75 @@ main() {
     printf "Creating new file: $ppt_filepath\n"
   fi
 
-  if [ "$stop_creations" != true ]; then
-    # Copy the template to create/overwrite macro file to be used
-    local copy="cp $libre_office_macro_template_filepath $libre_office_macro_filepath"
-    eval $copy
+  # Copy the template to create/overwrite macro file to be used
+  local copy="cp $libre_office_macro_template_filepath $libre_office_macro_filepath"
+  eval $copy
 
-    # Write filepath of SVG and PPT to macro for Libre Office to read
-    local sed="sed -i '' \"s~SVG_FILEPATH~$svg_filepath~\" $libre_office_macro_filepath"
-    eval $sed
-
-    local sed="sed -i '' \"s~PPT_FILEPATH~$ppt_filepath~\" $libre_office_macro_filepath"
-    eval $sed
+  # Write filepath of SVG and PPT to macro for Libre Office to read
+  local svg_sed="sed -i '' \"s~SVG_FILEPATH~$svg_filepath~\" $libre_office_macro_filepath"
+  if [ "$debug" == true ]; then
+    echo_var svg_sed
   fi
 
   if [ "$stop_creations" != true ]; then
-    # Launch the template PPT with Libre Office and kick off macro
-    libre_office_cmd="/Applications/LibreOffice.app/Contents/MacOS/soffice --invisible --headless $template_ppt_filepath \"vnd.sun.star.script:Standard.$libre_office_macro.Main?language=Basic&location=application\""
-    eval $libre_office_cmd
+    eval $svg_sed
+  fi
 
-    # Launch the new PPT file if where_to_open is defined
-    if [ ! -z $where_to_open ]; then
-      open_cmd="open -a $where_to_open $ppt_filepath"
-      eval $open_cmd
+  local ppt_sed="sed -i '' \"s~PPT_FILEPATH~$ppt_filepath~\" $libre_office_macro_filepath"
+  if [ "$debug" == true ]; then
+    echo_var ppt_sed
+  fi
+
+  if [ "$stop_creations" != true ]; then
+    eval $ppt_sed
+  fi
+
+  # Launch the template PPT with Libre Office and kick off macro
+  local libre_office_cmd="/Applications/LibreOffice.app/Contents/MacOS/soffice --invisible --headless $template_ppt_filepath \"vnd.sun.star.script:Standard.$libre_office_macro.Main?language=Basic&location=application\""
+
+  if [ "$debug" == true ]; then
+    echo_var libre_office_cmd
+  fi
+
+  if [ "$stop_creations" != true ]; then
+    eval $libre_office_cmd
+  fi
+
+  # Launch the new PPT file if where_to_open is defined
+  if [ ! -z $where_to_open ]; then
+    local open_cmd="open -a $where_to_open $ppt_filepath"
+
+    if [ "$debug" == true ]; then
+      echo_var open_cmd
     fi
 
-    echo_success "File created: $ppt_filepath"
+    if [ "$stop_creations" != true ]; then
+      eval $open_cmd
+    fi
   fi
+
+    echo_success "File created: $ppt_filepath"
 }
+
+description="application config file"
+source $application_config_file_filepath
+exit_code=$?
+
+# echo_breakpoint exit_code "$description" "found" 1 0
+
+if [[ $exit_code -ne 0 ]]; then
+  echo_failed "find $description"
+fi
+
+description="application preferences file"
+source $application_preferences_file_filepath
+exit_code=$?
+
+# echo_breakpoint exit_code "$description" "found" 1 0
+
+if [[ $exit_code -ne 0 ]]; then
+  echo_failed "find $description"
+fi
 
 # First parameter should be SVG file if no flags are passed
 first_parameter=$1

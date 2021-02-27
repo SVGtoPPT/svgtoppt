@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha13
+version=1.0.0-alpha14
 application_name=svgtoppt
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
