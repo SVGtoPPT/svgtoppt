@@ -465,7 +465,7 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
 
   # Start
 
-  if [ "$1" == true ] && [ "$silent" != true ];; then
+  if [ "$1" == true ] && [ "$silent" != true ]; then
     echo "$svg Starting basic installation of SVG to PPT"
     echo
   fi
