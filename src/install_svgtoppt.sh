@@ -59,7 +59,7 @@ print_text_options() {
 # print_text_options
 
 # EMOJIS
-brew="🍺"
+beer="🍺"
 checkmark="✅"
 exclamation="❗️"
 libre="📄"
@@ -159,7 +159,9 @@ whichapp() {
 check_libre_office_installed() {
   local description="Libre Office"
 
-  libre_office_location=$(whichapp "LibreOffice")
+  brew=$(command -v brew || command -v /usr/local/bin/brew || command -v /usr/local/sbin/brew || command -v ~/bin/brew)
+  IFS=' ' read -r brew_libre_office_location string <<< $(eval $brew info libreoffice | sed -n '3p')
+  libre_office_location=$(whichapp "LibreOffice" || printf $brew_libre_office_location)
 
   if [[ -z "$libre_office_location" ]]; then
     local found=0
@@ -306,49 +308,6 @@ install_basic() (
           exit 1
         fi
       fi
-    fi
-  }
-
-  # Checks if wget is installed
-  # Returns 0 for not found, 1 for found
-  check_wget_installed() {
-    local description="wget"
-
-    local wget_location=$(command -v wget)
-
-    # echo_breakpoint wget_location "$description" "found" "" 1
-
-    if [ -z $wget_location ]; then
-      return 0
-    else
-      if [ "$silent" != true ]; then
-        echo_already_installed "$description" $wget_location
-      fi
-      return 1
-    fi
-  }
-
-  # Installs wget
-  install_wget() {
-    local description="wget"
-
-    local wget_install_cmd="brew install wget"
-    if [ "$silent" != true ]; then
-      echo "Starting wget installation: $(tput sgr 0 1)$wget_install_cmd$txtrst"
-    fi
-
-    if [ "$stop_creations" != true ]; then
-      eval $wget_install_cmd
-    fi
-    local exit_code=$?
-
-    # echo_breakpoint exit_code "wget" "installed" 1 0
-
-    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
-      echo_success "$description installed"
-    else
-      echo_error "installing $description with Homebrew"
-      exit 1
     fi
   }
 
@@ -506,7 +465,7 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
 
   # Start
 
-  if [ "$1" == true ]; then
+  if [ "$1" == true ] && [ "$silent" != true ];; then
     echo "$svg Starting basic installation of SVG to PPT"
     echo
   fi
@@ -514,11 +473,6 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
   validate_application_directory_missing
   validate_bash_script_missing
   validate_libre_office_macro_template_missing
-
-  check_wget_installed
-  if [[ $? -eq 0 ]]; then
-    install_wget
-  fi
 
   create_application_directory
 
@@ -567,7 +521,9 @@ install_complete() (
     local description="Homebrew"
 
     local homebrew_install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-    echo "$brew Starting $description installation: $txtund$homebrew_install_cmd$txtrst"
+    if [ "$silent" != true ]; then
+      echo "$beer Starting $description installation: $txtund$homebrew_install_cmd$txtrst"
+    fi
 
     if [ "$stop_creations" != true ]; then
       eval $homebrew_install_cmd
@@ -587,8 +543,11 @@ install_complete() (
   # Installs Libre Office
   install_libre_office() {
     local description="Libre Office"
+
     local libre_office_install_cmd="brew install --cask libreoffice"
-    echo "$libre Starting $description installation: $txtund$libre_office_install_cmd$txtrst"
+    if [ "$silent" != true ]; then
+      echo "$libre Starting $description installation: $txtund$libre_office_install_cmd$txtrst"
+    fi
 
     if [ "$stop_creations" != true ]; then
       eval $libre_office_install_cmd
@@ -607,8 +566,8 @@ install_complete() (
 
   if [ "$silent" != true ]; then
     echo_bold "$svg Starting complete installation of SVG to PPT"
+    echo
   fi
-  echo
 
   check_libre_office_installed
 
