@@ -307,7 +307,7 @@ template_ppt_filepath=$template_ppt_filepath
 input_svg=$input_svg
 ppt_name=$ppt_name
 force_ppt=$force_ppt
-where_to_open=$where_to_open" > $application_preferences_file_filepath
+where_to_open=$where_to_open" >$application_preferences_file_filepath
 
   local exit_code=$?
 
@@ -320,6 +320,48 @@ where_to_open=$where_to_open" > $application_preferences_file_filepath
   echo_success "Preferences updated"
 }
 
+# Checks whether an application is installed
+# Credit: https://stackoverflow.com/a/12900116
+whichapp() {
+  local appNameOrBundleId=$1 isAppName=0 bundleId
+
+  # Determine whether an app *name* or *bundle id* was specified
+  [[ $appNameOrBundleId =~ \.[aA][pP][pP]$ || $appNameOrBundleId =~ ^[^.]+$ ]] && isAppName=1
+  if ((isAppName)); then
+    # An application NAME was specified
+
+    # Translate to a bundle id first
+    bundleId=$(osascript -e "id of application \"$appNameOrBundleId\"" 2>/dev/null) ||
+      {
+        return 1
+      }
+  else # a bundle id was specified
+    bundleId=$appNameOrBundleId
+  fi
+
+  # Let AppleScript determine the full bundle path
+  fullPath=$(osascript -e "tell application \"Finder\" to POSIX path of (get application file id \"$bundleId\" as alias)" 2>/dev/null ||
+    {
+      echo "$FUNCNAME: ERROR: Application with specified bundle ID not found: $bundleId" 1>&2
+      return 1
+    })
+  printf '%s\n' "$fullPath"
+
+  # Warn about /Volumes/... paths, because applications launched from mounted devices aren't persistently installed
+  if [[ $fullPath == /Volumes/* ]]; then
+    echo "NOTE: Application is not persistently installed, due to being located on a mounted volume." >&2
+  fi
+}
+
+description="Libre Office"
+IFS=' ' read -r brew_path string <<<"$(brew info libreoffice | sed -n '3p')"
+libre_office_location=$(whichapp "LibreOffice" || printf $brew_path)
+
+if [ -z "$libre_office_location" ]; then
+  echo_failed "find $description; please ensure Libre Office is installed"
+  exit 1
+fi
+
 description="application config file"
 source $application_config_file_filepath
 exit_code=$?
@@ -327,7 +369,8 @@ exit_code=$?
 # echo_breakpoint exit_code "$description" "found" 1 0
 
 if [[ $exit_code -ne 0 ]]; then
-  echo_failed "find $description"
+  echo_failed "find $description: $application_config_file_filepath"
+  exit 1
 fi
 
 description="application preferences file"
@@ -338,6 +381,22 @@ exit_code=$?
 
 if [[ $exit_code -ne 0 ]]; then
   echo_failed "find $description"
+  exit 1
+fi
+
+description="Libre Office macro template"
+
+if test -f "$libre_office_macro_template_filepath"; then
+  found=0
+else
+  found=1
+fi
+
+# echo_breakpoint found "$description" "found" 1 0
+
+if [[ $found -ne 0 ]]; then
+  echo_failed "find $description: $libre_office_macro_template_filepath"
+  exit 1
 fi
 
 # First parameter should be SVG file if no flags are passed
@@ -368,6 +427,8 @@ elif [ "$print_version" == true ]; then
   exit
 elif [ "$first_parameter" == "reset_pref" ]; then
   reset_preferences
+elif [ "$first_parameter" == "check_install" ]; then
+  exit 0
 else
   if [ "$save_preferences" == true ]; then
     update_preferences

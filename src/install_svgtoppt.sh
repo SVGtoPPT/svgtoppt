@@ -165,7 +165,10 @@ check_libre_office_installed() {
     local found=0
   else
     local found=1
-    echo_already_installed "$description" $libre_office_location
+
+    if [ "$silent" != true ]; then
+      echo_already_installed "$description" $libre_office_location
+    fi
   fi
 
   # echo_breakpoint found "$description" "found" 0 1
@@ -192,6 +195,7 @@ install_basic() (
   # Check if the application directory already exists
   validate_application_directory_missing() {
     local description="application directory"
+
     check_directory_missing $application_directory "$description"
     exit_code=$?
 
@@ -223,7 +227,7 @@ install_basic() (
     fi
   }
 
-  # Checks if a file exists
+  # Checks if a file doesn't exist
   # Returns 0 for not found, 1 for found
   check_file_missing() {
     if test -f $1; then
@@ -239,6 +243,7 @@ install_basic() (
 
   validate_bash_script_missing() {
     local description="Bash script"
+
     check_file_missing $bash_script_filepath
     exit_code=$?
 
@@ -269,8 +274,11 @@ install_basic() (
     fi
   }
 
-  validate_libre_office_macro_missing() {
+  validate_libre_office_macro_template_missing() {
     local description="Libre Office macro"
+
+    local description="Libre Office macro"
+
     check_file_missing $libre_office_macro_template_filepath
     exit_code=$?
 
@@ -313,7 +321,9 @@ install_basic() (
     if [ -z $wget_location ]; then
       return 0
     else
-      echo_already_installed "$description" $wget_location
+      if [ "$silent" != true ]; then
+        echo_already_installed "$description" $wget_location
+      fi
       return 1
     fi
   }
@@ -323,7 +333,9 @@ install_basic() (
     local description="wget"
 
     local wget_install_cmd="brew install wget"
-    echo "Starting wget installation: $(tput sgr 0 1)$wget_install_cmd$txtrst"
+    if [ "$silent" != true ]; then
+      echo "Starting wget installation: $(tput sgr 0 1)$wget_install_cmd$txtrst"
+    fi
 
     if [ "$stop_creations" != true ]; then
       eval $wget_install_cmd
@@ -332,7 +344,7 @@ install_basic() (
 
     # echo_breakpoint exit_code "wget" "installed" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
+    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
       echo_success "$description installed"
     else
       echo_error "installing $description with Homebrew"
@@ -355,7 +367,9 @@ install_basic() (
     # echo_breakpoint exit_code "$description" "created" 1 0
 
     if [[ $exit_code -eq 0 ]]; then
-      echo_success "${description^} created"
+      if [ "$silent" != true ]; then
+        echo_success "${description^} created"
+      fi
 
       if [ "$stop_creations" != true ]; then
         mv $application_directory/src/* $application_directory
@@ -379,7 +393,7 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
+    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
       echo_success "${description^} moved"
     else
       echo_failed "move $description"
@@ -397,7 +411,7 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "changed" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
+    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
       echo_success "${description^} updated"
     else
       echo_failed "change $description"
@@ -418,7 +432,7 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
+    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
       echo_success "${description^} moved"
     else
       echo_error "moving $description"
@@ -439,7 +453,7 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
+    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
       echo_success "${description^} moved"
     else
       echo_error "moving $description"
@@ -461,7 +475,7 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
 
     # echo_breakpoint exit_code "$description" "updated" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
+    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
       echo_success "${description^} updated"
     else
       echo_error "updating $description"
@@ -482,7 +496,7 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
+    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
       echo_success "${description^} moved"
     else
       echo_error "moving $description"
@@ -499,7 +513,7 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
 
   validate_application_directory_missing
   validate_bash_script_missing
-  validate_libre_office_macro_missing
+  validate_libre_office_macro_template_missing
 
   check_wget_installed
   if [[ $? -eq 0 ]]; then
@@ -530,13 +544,17 @@ install_complete() (
   # Returns 0 for not found, 1 for found
   check_homebrew_installed() {
     local description="Homebrew"
+
     local homebrew_location=$(command -v brew)
 
     if [ -z $homebrew_location ]; then
       local found=0
     else
       local found=1
-      echo_already_installed "$description" $homebrew_location
+
+      if [ "$silent" != true ]; then
+        echo_already_installed "$description" $homebrew_location
+      fi
     fi
 
     # echo_breakpoint found "$description" "found" 0 1
@@ -547,6 +565,7 @@ install_complete() (
   # Installs Homebrew
   install_homebrew() {
     local description="Homebrew"
+
     local homebrew_install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
     echo "$brew Starting $description installation: $txtund$homebrew_install_cmd$txtrst"
 
@@ -560,7 +579,7 @@ install_complete() (
     if [[ $exit_code -ne 0 ]]; then
       echo_error "installing $description"
       exit 1
-    else
+    elif [ "$silent" != true ]; then
       echo_success "$description installed"
     fi
   }
@@ -581,12 +600,14 @@ install_complete() (
     if [[ $exit_code -ne 0 ]]; then
       echo_error "installing $description with Homebrew"
       exit 1
-    else
+    elif [ "$silent" != true ]; then
       echo_success "$description installed"
     fi
   }
 
-  echo_bold "$svg Starting complete installation of SVG to PPT"
+  if [ "$silent" != true ]; then
+    echo_bold "$svg Starting complete installation of SVG to PPT"
+  fi
   echo
 
   check_libre_office_installed
@@ -610,11 +631,12 @@ install_complete() (
 install_type=$1
 
 # Check for flags overwriting defaults
-while getopts "a:i:drx" option; do
+while getopts "a:i:drsx" option; do
   case "${option}" in
     a) application_directory=${OPTARG} ;;
     i) install_type=${OPTARG} ;;
     r) reinstall=true ;;
+    s) silent=true ;;
     d) debug=true ;;
     x) stop_creations=true ;;
   esac

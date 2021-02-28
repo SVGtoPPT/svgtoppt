@@ -1,6 +1,6 @@
 version=1.0.0-alpha15
 
-application_support_directory="Application\ Support"
+application_support_directory="Application Support"
 libre_office_macros_filepath=~/Library/$application_support_directory/LibreOffice/4/user/basic/Standard
 
 libre_office_macro_template=SVGtoPPT_template.xba
