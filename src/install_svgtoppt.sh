@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha19
+version=1.0.0-alpha20
 application_name=svgtoppt
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
@@ -121,6 +121,17 @@ echo_breakpoint() {
   echo
 }
 
+find_path() {
+  path=$( \
+          command -v $1 || \
+          command -v /usr/bin/$1 || \
+          command -v /usr/local/sbin/$1 || \
+          command -v /usr/local/bin/$1 || \
+          command -v ~/bin/$1 \
+        )
+  printf "$path"
+}
+
 # Checks whether an application is installed
 # Credit: https://stackoverflow.com/a/12900116
 whichapp() {
@@ -159,7 +170,6 @@ whichapp() {
 check_libre_office_installed() {
   local description="Libre Office"
 
-  brew=$(command -v brew || command -v /usr/local/bin/brew || command -v /usr/local/sbin/brew || command -v ~/bin/brew)
   IFS=' ' read -r brew_libre_office_location string <<< $(eval $brew info libreoffice | sed -n '3p')
   libre_office_location=$(whichapp "LibreOffice" || printf $brew_libre_office_location)
 
@@ -321,7 +331,8 @@ install_basic() (
 
     if [ "$stop_creations" != true ]; then
       remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
-      local create_and_curl="mkdir $application_directory && curl -L $remote_url | tar xz --strip 1 -C $application_name"
+      tar=$(find_path tar)
+      local create_and_curl="mkdir $application_directory && $curl -L $remote_url) | $tar xz --strip 1 -C $application_name"
       eval $create_and_curl
     fi
     local exit_code=$?
@@ -502,7 +513,7 @@ install_complete() (
   check_homebrew_installed() {
     local description="Homebrew"
 
-    local homebrew_location=$(command -v brew)
+    local homebrew_location=$(find_path brew)
 
     if [ -z $homebrew_location ]; then
       local found=0
@@ -580,6 +591,7 @@ install_complete() (
     if [[ $? -eq 0 ]]; then
       install_homebrew
     fi
+    brew=$(find_path brew)
 
     install_libre_office
   fi
@@ -603,6 +615,8 @@ while getopts "a:i:drsx" option; do
     x) stop_creations=true ;;
   esac
 done
+
+curl=$(find_path curl)
 
 # Valides install_type and routes to install functions
 case "$install_type" in
