@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha20
+version=1.0.0-alpha21
 application_name=svgtoppt
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
@@ -332,7 +332,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
       tar=$(find_path tar)
-      local create_and_curl="mkdir $application_directory && $curl -L $remote_url) | $tar xz --strip 1 -C $application_name"
+      local create_and_curl="mkdir $application_directory && $curl -L $remote_url | $tar xz --strip 1 -C $application_name"
       eval $create_and_curl
     fi
     local exit_code=$?
