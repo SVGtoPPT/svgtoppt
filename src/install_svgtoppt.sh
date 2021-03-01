@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha24
+version=1.0.0-alpha25
 application_name=svgtoppt
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
@@ -122,15 +122,24 @@ echo_breakpoint() {
 }
 
 find_path() {
-  path=$( \
-          command -v $1 || \
-          command -v /usr/bin/$1 || \
-          command -v /usr/local/sbin/$1 || \
-          command -v /usr/local/bin/$1 || \
-          command -v ~/bin/$1 \
-        )
+  path=$(
+    command -v $1 ||
+      command -v /bin/$1 ||
+      command -v /usr/bin/$1 ||
+      command -v /usr/local/sbin/$1 ||
+      command -v /usr/local/bin/$1 ||
+      command -v ~/bin/$1
+  )
   printf "$path"
 }
+
+brew=$(find_path brew)
+cat=$(find_path cat)
+curl=$(find_path curl)
+find=$(find_path find)
+mkdir=$(find_path mkdir)
+mv=$(find_path mv)
+rm=$(find_path rm)
 
 # Checks whether an application is installed
 # Credit: https://stackoverflow.com/a/12900116
@@ -165,12 +174,49 @@ whichapp() {
   fi
 }
 
+# Checks if Homebrew is installed
+# Returns 0 for not found, 1 for found
+check_homebrew_installed() {
+  local description="Homebrew"
+
+  if [ "$debug" == true ]; then
+    echo_var brew
+  fi
+
+  if [ -z $brew ]; then
+    local found=0
+  else
+    local found=1
+
+    if [ "$silent" != true ]; then
+      echo_already_installed "$description" $homebrew_location
+    fi
+  fi
+
+  # echo_breakpoint found "$description" "found" 0 1
+
+  return $found
+}
+
 # Checks if Libre Office is installed
 # Returns 0 for not found, 1 for found
 check_libre_office_installed() {
   local description="Libre Office"
 
-  IFS=' ' read -r brew_libre_office_location string <<< $(eval $brew info libreoffice | sed -n '3p')
+  check_homebrew_installed
+
+  if [[ $? -ne 0 ]]; then
+    local brew_command="$brew info libreoffice | sed -n '3p'"
+
+    if [ "$debug" == true ]; then
+      echo_var brew_command
+    fi
+
+    IFS=' ' read -r brew_libre_office_location string <<<$(eval $brew_command)
+  else
+    $brew_libre_office_location=false
+  fi
+
   libre_office_location=$(whichapp "LibreOffice" || printf $brew_libre_office_location)
 
   if [ "$debug" == true ]; then
@@ -233,7 +279,13 @@ install_basic() (
       fi
 
       if [ "$stop_creations" != true ]; then
-        rm -rf $application_directory
+        local remove_directory="$rm -rf $application_directory"
+
+        if [ "$debug" == true ]; then
+          echo_var remove_directory
+        fi
+
+        eval $remove_directory
 
         if [[ $? -ne 0 ]]; then
           echo_error "deleting $description" $application_directory
@@ -280,7 +332,13 @@ install_basic() (
       fi
 
       if [ "$stop_creations" != true ]; then
-        rm $bash_script_filepath
+        local remove_directory="$rm $bash_script_filepath"
+
+        if [ "$debug" == true ]; then
+          echo_var remove_directory
+        fi
+
+        eval $remove_directory
 
         if [[ $? -ne 0 ]]; then
           echo_error "deleting $description" $bash_script_filepath
@@ -315,7 +373,13 @@ install_basic() (
       fi
 
       if [ "$stop_creations" != true ]; then
-        rm $libre_office_macro_template_filepath
+        local remove_file="$rm $libre_office_macro_template_filepath"
+
+        if [ "$debug" == true ]; then
+          echo_var remove_file
+        fi
+
+        eval $remove_file
 
         if [[ $? -ne 0 ]]; then
           echo_error "deleting $description" $libre_office_macro_template_filepath
@@ -335,13 +399,13 @@ install_basic() (
 
     if [ "$stop_creations" != true ]; then
       remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
-      unzip=$(find_path unzip)
+      local unzip=$(find_path unzip)
 
       if [ "$debug" == true ]; then
         echo_var unzip
       fi
 
-      local create_directory="$curl -L $remote_url > file.zip && $unzip file.zip && rm file.zip && mv $application_name-$version $application_name"
+      local create_directory="$curl -L $remote_url > file.zip && $unzip file.zip && $rm file.zip && $mv $application_name-$version $application_name"
 
       if [ "$debug" == true ]; then
         echo_var create_directory
@@ -359,9 +423,23 @@ install_basic() (
       fi
 
       if [ "$stop_creations" != true ]; then
-        mv $application_directory/src/* $application_directory
-        rm -rf $application_directory/*/
-        mkdir $output_directory
+        local move_src_files="$mv $application_directory/src/* $application_directory"
+        if [ "$debug" == true ]; then
+          echo_var move_src_files
+        fi
+        eval $move_src_files
+
+        local remove_directories="$rm -rf $application_directory/*/"
+        if [ "$debug" == true ]; then
+          echo_var remove_directories
+        fi
+        eval $remove_directories
+
+        local make_output_directory="$mkdir $output_directory"
+        if [ "$debug" == true ]; then
+          echo_var make_output_directory
+        fi
+        eval $make_output_directory
       fi
     else
       echo_failed "create $description: $bldwht$application_directory"
@@ -374,7 +452,7 @@ install_basic() (
     local description="Bash script"
 
     if [ "$stop_creations" != true ]; then
-      local move="mv $application_directory/$bash_script.sh $bash_script_filepath"
+      local move="$mv $application_directory/$bash_script.sh $bash_script_filepath"
 
       if [ "$debug" == true ]; then
         echo_var move
@@ -424,7 +502,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       local source="$application_directory/$libre_office_macro_template"
       local target=$libre_office_macro_template_filepath
-      local move="mv $source $target"
+      local move="$mv $source $target"
 
       if [ "$debug" == true ]; then
         echo_var move
@@ -451,7 +529,13 @@ install_basic() (
       local current_filepath="$application_directory/$application_config_file"
 
       # Add version to config file
-      echo "version=$version" | cat - $current_filepath >temp && mv temp $current_filepath
+      local add_version="echo \"version=$version\" | $cat - $current_filepath >temp && $mv temp $current_filepath"
+
+      if [ "$debug" == true ]; then
+        echo_var add_version
+      fi
+
+      eval $add_version
     fi
 
     exit_code=$?
@@ -472,7 +556,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       local source="$application_directory/$application_config_file"
       local target=$application_config_file_filepath
-      local move="mv $source $target"
+      local move="$mv $source $target"
 
       if [ "$debug" == true ]; then
         echo_var move
@@ -499,8 +583,13 @@ install_basic() (
       local current_filepath="$application_directory/$application_preferences_file"
 
       # Add output_directory and template PPT filepath to preferences file
-      echo "output_directory=$output_directory
-template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp && mv temp $current_filepath
+      local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | $cat - $current_filepath >temp && $mv temp $current_filepath"
+
+      if [ "$debug" == true ]; then
+        echo_var add_preferences
+      fi
+
+      eval $add_preferences
     fi
 
     exit_code=$?
@@ -521,7 +610,7 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
     if [ "$stop_creations" != true ]; then
       local source="$application_directory/$application_preferences_file"
       local target=$application_preferences_file_filepath
-      local move="mv $source $target"
+      local move="$mv $source $target"
 
       if [ "$debug" == true ]; then
         echo_var move
@@ -565,8 +654,11 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
   update_application_preferences_file
   move_application_preferences_file
 
-  find $application_directory -type f -not -name "$template_ppt" -delete
-  rm -rf $application_directory/.* 2>/dev/null
+  $remove_extra_files="$find $application_directory -type f -not -name "$template_ppt" -delete"
+  eval $remove_extra_files
+
+  remove_dot_files="$rm -rf $application_directory/.* 2>/dev/null"
+  eval $remove_dot_files
 
   if [ "$silent" != true ]; then
     echo
@@ -576,32 +668,6 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
 
 # Installs Homebrew (if needed) and Libre Office, then executes a basic install
 install_complete() (
-  # Checks if Homebrew is installed
-  # Returns 0 for not found, 1 for found
-  check_homebrew_installed() {
-    local description="Homebrew"
-
-    local homebrew_location=$(find_path brew)
-
-    if [ "$debug" == true ]; then
-      echo_var homebrew_location
-    fi
-
-    if [ -z $homebrew_location ]; then
-      local found=0
-    else
-      local found=1
-
-      if [ "$silent" != true ]; then
-        echo_already_installed "$description" $homebrew_location
-      fi
-    fi
-
-    # echo_breakpoint found "$description" "found" 0 1
-
-    return $found
-  }
-
   # Installs Homebrew
   install_homebrew() {
     local description="Homebrew"
@@ -671,7 +737,6 @@ install_complete() (
     if [[ $? -eq 0 ]]; then
       install_homebrew
     fi
-    brew=$(find_path brew)
 
     if [ "$debug" == true ]; then
       echo_var brew
@@ -699,8 +764,6 @@ while getopts "a:i:drsx" option; do
     x) stop_creations=true ;;
   esac
 done
-
-curl=$(find_path curl)
 
 # Valides install_type and routes to install functions
 case "$install_type" in
