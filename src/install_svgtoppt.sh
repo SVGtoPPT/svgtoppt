@@ -1,10 +1,10 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha21
+version=1.0.0-alpha22
 application_name=svgtoppt
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
-application_preferemces_file=$application_name-preferences
-application_preferences_file_filepath=~/.$application_preferemces_file
+application_preferences_file=$application_name-preferences
+application_preferences_file_filepath=~/.$application_preferences_file
 
 # BASH SCRIPT CONFIG VALUES
 bash_script=svgtoppt
@@ -173,6 +173,10 @@ check_libre_office_installed() {
   IFS=' ' read -r brew_libre_office_location string <<< $(eval $brew info libreoffice | sed -n '3p')
   libre_office_location=$(whichapp "LibreOffice" || printf $brew_libre_office_location)
 
+  if [ "$debug" == true ]; then
+    echo_var libre_office_location
+  fi
+
   if [[ -z "$libre_office_location" ]]; then
     local found=0
   else
@@ -332,8 +336,18 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
       tar=$(find_path tar)
-      local create_and_curl="mkdir $application_directory && $curl -L $remote_url | $tar xz --strip 1 -C $application_name"
-      eval $create_and_curl
+
+      if [ "$debug" == true ]; then
+        echo_var tar
+      fi
+
+      local application_curl="mkdir $application_directory && $curl -L $remote_url | $tar xz --strip 1 -C $application_name"
+
+      if [ "$debug" == true ]; then
+        echo_var application_curl
+      fi
+
+      eval $application_curl
     fi
     local exit_code=$?
 
@@ -360,7 +374,13 @@ install_basic() (
     local description="Bash script"
 
     if [ "$stop_creations" != true ]; then
-      mv "$application_directory/$bash_script.sh" $bash_script_filepath
+      local move="mv $application_directory/$bash_script.sh $bash_script_filepath"
+
+      if [ "$debug" == true ]; then
+        echo_var move
+      fi
+
+      eval $move
     fi
     local exit_code=$?
 
@@ -378,7 +398,13 @@ install_basic() (
     local description="access to Bash script"
 
     if [ "$stop_creations" != true ]; then
-      chmod +x $bash_script_filepath
+      loval modify="chmod +x $bash_script_filepath"
+
+      if [ "$debug" == true ]; then
+        echo_var modify
+      fi
+
+      eval $modify
     fi
     local exit_code=$?
 
@@ -399,6 +425,11 @@ install_basic() (
       local source="$application_directory/$libre_office_macro_template"
       local target=$libre_office_macro_template_filepath
       local move="mv $source $target"
+
+      if [ "$debug" == true ]; then
+        echo_var move
+      fi
+
       eval $move
     fi
     exit_code=$?
@@ -413,6 +444,28 @@ install_basic() (
     fi
   }
 
+  update_application_config_file() {
+    local description="application config file"
+
+    if [ "$stop_creations" != true ]; then
+      local current_filepath="$application_directory/$application_config_file"
+
+      # Add version to config file
+      echo "version=$version" | cat - $current_filepath >temp && mv temp $current_filepath
+    fi
+
+    exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "updated" 1 0
+
+    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
+      echo_success "${description^} updated"
+    else
+      echo_error "updating $description"
+      exit 1
+    fi
+  }
+
   move_application_config_file() {
     local description="application config file"
 
@@ -420,6 +473,11 @@ install_basic() (
       local source="$application_directory/$application_config_file"
       local target=$application_config_file_filepath
       local move="mv $source $target"
+
+      if [ "$debug" == true ]; then
+        echo_var move
+      fi
+
       eval $move
     fi
     exit_code=$?
@@ -438,12 +496,13 @@ install_basic() (
     local description="application preferences file"
 
     if [ "$stop_creations" != true ]; then
-      local current_filepath="$application_directory/$application_preferemces_file"
+      local current_filepath="$application_directory/$application_preferences_file"
 
       # Add output_directory and template PPT filepath to preferences file
       echo "output_directory=$output_directory
 template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp && mv temp $current_filepath
     fi
+
     exit_code=$?
 
     # echo_breakpoint exit_code "$description" "updated" 1 0
@@ -460,9 +519,14 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
     local description="application preferences file"
 
     if [ "$stop_creations" != true ]; then
-      local source="$application_directory/$application_preferemces_file"
+      local source="$application_directory/$application_preferences_file"
       local target=$application_preferences_file_filepath
       local move="mv $source $target"
+
+      if [ "$debug" == true ]; then
+        echo_var move
+      fi
+
       eval $move
     fi
     exit_code=$?
@@ -495,10 +559,12 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
 
   move_libre_office_macro_template
 
+  update_application_config_file
   move_application_config_file
 
   update_application_preferences_file
   move_application_preferences_file
+
   find $application_directory -type f -not -name "$template_ppt" -delete
   rm -rf $application_directory/.* 2>/dev/null
 
@@ -514,6 +580,10 @@ install_complete() (
     local description="Homebrew"
 
     local homebrew_location=$(find_path brew)
+
+    if [ "$debug" == true ]; then
+      echo_var homebrew_location
+    fi
 
     if [ -z $homebrew_location ]; then
       local found=0
@@ -539,6 +609,10 @@ install_complete() (
       echo "$beer Starting $description installation: $txtund$homebrew_install_cmd$txtrst"
     fi
 
+    if [ "$debug" == true ]; then
+      echo_var homebrew_install_cmd
+    fi
+
     if [ "$stop_creations" != true ]; then
       eval $homebrew_install_cmd
     fi
@@ -558,9 +632,13 @@ install_complete() (
   install_libre_office() {
     local description="Libre Office"
 
-    local libre_office_install_cmd="brew install --cask libreoffice"
+    local libre_office_install_cmd="$brew install --cask libreoffice"
     if [ "$silent" != true ]; then
       echo "$libre Starting $description installation: $txtund$libre_office_install_cmd$txtrst"
+    fi
+
+    if [ "$debug" == true ]; then
+      echo_var libre_office_install_cmd
     fi
 
     if [ "$stop_creations" != true ]; then
@@ -592,6 +670,10 @@ install_complete() (
       install_homebrew
     fi
     brew=$(find_path brew)
+
+    if [ "$debug" == true ]; then
+      echo_var brew
+    fi
 
     install_libre_office
   fi
