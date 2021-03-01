@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha23
+version=1.0.0-alpha24
 application_name=svgtoppt
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
@@ -341,7 +341,7 @@ install_basic() (
         echo_var unzip
       fi
 
-      local create_directory="$curl -L $remote_url > file.zip && $unzip file.zip && rm file.zip && cp $application_name-$version $application_name"
+      local create_directory="$curl -L $remote_url > file.zip && $unzip file.zip && rm file.zip && mv $application_name-$version $application_name"
 
       if [ "$debug" == true ]; then
         echo_var create_directory
