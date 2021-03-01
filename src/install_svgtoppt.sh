@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha22
+version=1.0.0-alpha23
 application_name=svgtoppt
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
@@ -335,19 +335,19 @@ install_basic() (
 
     if [ "$stop_creations" != true ]; then
       remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
-      tar=$(find_path tar)
+      unzip=$(find_path unzip)
 
       if [ "$debug" == true ]; then
-        echo_var tar
+        echo_var unzip
       fi
 
-      local application_curl="mkdir $application_directory && $curl -L $remote_url | $tar xz --strip 1 -C $application_name"
+      local create_directory="$curl -L $remote_url > file.zip && $unzip file.zip && rm file.zip && cp $application_name-$version $application_name"
 
       if [ "$debug" == true ]; then
-        echo_var application_curl
+        echo_var create_directory
       fi
 
-      eval $application_curl
+      eval $create_directory
     fi
     local exit_code=$?
 
@@ -568,8 +568,10 @@ template_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp &&
   find $application_directory -type f -not -name "$template_ppt" -delete
   rm -rf $application_directory/.* 2>/dev/null
 
-  echo
-  echo_success $txtbld"SVG to PPT installed"
+  if [ "$silent" != true ]; then
+    echo
+    echo_success $txtbld"SVG to PPT installed"
+  fi
 )
 
 # Installs Homebrew (if needed) and Libre Office, then executes a basic install

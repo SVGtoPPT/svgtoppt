@@ -1,5 +1,4 @@
 
-
 application_support_directory="Application Support"
 libre_office_macros_filepath=~/Library/$application_support_directory/LibreOffice/4/user/basic/Standard
 
