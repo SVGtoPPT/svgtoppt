@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha25
+version=1.0.0-alpha26
 application_name=svgtoppt
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
@@ -654,10 +654,20 @@ install_basic() (
   update_application_preferences_file
   move_application_preferences_file
 
-  $remove_extra_files="$find $application_directory -type f -not -name "$template_ppt" -delete"
+  remove_extra_files="$find $application_directory -type f -not -name \"$template_ppt\" -delete"
+
+  if [ "$debug" == true ]; then
+    echo_var remove_extra_files
+  fi
+
   eval $remove_extra_files
 
   remove_dot_files="$rm -rf $application_directory/.* 2>/dev/null"
+
+  if [ "$debug" == true ]; then
+    echo_var remove_dot_files
+  fi
+
   eval $remove_dot_files
 
   if [ "$silent" != true ]; then
