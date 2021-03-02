@@ -1,10 +1,12 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha26
+version=1.0.0-alpha27
 application_name=svgtoppt
+application_directory=$PWD/$application_name
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
 application_preferences_file=$application_name-preferences
 application_preferences_file_filepath=~/.$application_preferences_file
+application_zip_file=$application_directory/$application_name.zip
 
 # BASH SCRIPT CONFIG VALUES
 bash_script=svgtoppt
@@ -17,13 +19,10 @@ libre_office_macros_filepath=~/Library/$application_support_directory/LibreOffic
 libre_office_macro_template_filepath=$libre_office_macros_filepath/$libre_office_macro
 
 # APPLICATION DEFAULTS
-application_directory=$PWD/$application_name
 output_directory=$application_directory/Output
 template_ppt=template.ppt
 template_ppt_filepath=$application_directory/$template_ppt
 stop_creations=false
-force_ppt=false
-where_to_open=keynote
 
 # TEXT FORMATS
 txtund=$(tput sgr 0 1) # Underline
@@ -62,6 +61,7 @@ print_text_options() {
 beer="🍺"
 checkmark="✅"
 exclamation="❗️"
+file="📁"
 libre="📄"
 octo="🐙"
 svg="🖌 "
@@ -140,6 +140,7 @@ find=$(find_path find)
 mkdir=$(find_path mkdir)
 mv=$(find_path mv)
 rm=$(find_path rm)
+unzip=$(find_path unzip)
 
 # Checks whether an application is installed
 # Credit: https://stackoverflow.com/a/12900116
@@ -254,7 +255,7 @@ install_basic() (
     return $found
   }
 
-  # Check if the application directory already exists
+  # Checks if the application directory already exists
   validate_application_directory_missing() {
     local description="application directory"
 
@@ -309,6 +310,7 @@ install_basic() (
     return $found
   }
 
+  # Checks whether the application Bash script already exists
   validate_bash_script_missing() {
     local description="Bash script"
 
@@ -348,6 +350,7 @@ install_basic() (
     fi
   }
 
+  # Checks whether the Libre Office macro template already exists
   validate_libre_office_macro_template_missing() {
     local description="Libre Office macro"
 
@@ -389,9 +392,9 @@ install_basic() (
     fi
   }
 
-  # Creates the application directory
-  create_application_directory() {
-    local description="application directory"
+  # Fetches the application zip by version from GitHub
+  fetch_application_zip() {
+    local description="application zip"
 
     if [ "$silent" != true ]; then
       echo "$octo Fetching $description from GitHub"
@@ -399,18 +402,15 @@ install_basic() (
 
     if [ "$stop_creations" != true ]; then
       remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
-      local unzip=$(find_path unzip)
 
       if [ "$debug" == true ]; then
         echo_var unzip
       fi
 
-      local create_directory="$curl -L $remote_url > file.zip && $unzip file.zip && $rm file.zip && $mv $application_name-$version $application_name"
-
+      local create_directory="$curl -L $remote_url > \"$application_zip_file\""
       if [ "$debug" == true ]; then
         echo_var create_directory
       fi
-
       eval $create_directory
     fi
     local exit_code=$?
@@ -421,28 +421,124 @@ install_basic() (
       if [ "$silent" != true ]; then
         echo_success "${description^} created"
       fi
-
-      if [ "$stop_creations" != true ]; then
-        local move_src_files="$mv $application_directory/src/* $application_directory"
-        if [ "$debug" == true ]; then
-          echo_var move_src_files
-        fi
-        eval $move_src_files
-
-        local remove_directories="$rm -rf $application_directory/*/"
-        if [ "$debug" == true ]; then
-          echo_var remove_directories
-        fi
-        eval $remove_directories
-
-        local make_output_directory="$mkdir $output_directory"
-        if [ "$debug" == true ]; then
-          echo_var make_output_directory
-        fi
-        eval $make_output_directory
-      fi
     else
       echo_failed "create $description: $bldwht$application_directory"
+      exit 1
+    fi
+  }
+
+  # Unzips the application zip to create application directory
+  unzip_application_zip() {
+    local description="application zip"
+
+    if [ "$silent" != true ]; then
+      echo "$file Unzipping $description"
+    fi
+
+    local unzip_directory="$unzip \"$application_zip_file\""
+    if [ "$debug" == true ]; then
+      echo_var unzip_directory
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $unzip_directory
+    fi
+
+    # echo_breakpoint exit_code "$description" "unzipped" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      if [ "$silent" != true ]; then
+        echo_success "${description^} unzipped"
+      fi
+    else
+      echo_failed "unzip $description: $bldwht$application_zip_file"
+      exit 1
+    fi
+  }
+
+  # Removes the application zip file
+  remove_application_zip() {
+    local description="application zip"
+
+    if [ "$silent" != true ]; then
+      echo "$trash Removing $description"
+    fi
+
+    local remove_zip="$rm \"$application_zip_file\""
+    if [ "$debug" == true ]; then
+      echo_var remove_zip
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $remove_zip
+    fi
+
+    # echo_breakpoint exit_code "$description" "removed" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      if [ "$silent" != true ]; then
+        echo_success "${description^} removed"
+      fi
+    else
+      echo_failed "remove $description"
+      exit 1
+    fi
+  }
+
+  # Moves files from $application_directory/src to $application_directory
+  move_src_files() {
+    local description="src files"
+
+    if [ "$silent" != true ]; then
+      echo "$file Moving $description"
+    fi
+
+    local move_files="$mv \"$application_directory/src/*\" \"$application_directory\""
+    if [ "$debug" == true ]; then
+      echo_var move_files
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $move_files
+    fi
+
+    # echo_breakpoint exit_code "$description" "moved" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      if [ "$silent" != true ]; then
+        echo_success "${description^} moved"
+      fi
+    else
+      echo_failed "move $description"
+      exit 1
+    fi
+  }
+
+  # Creates an "Output" directory under $application_directory
+  create_output_directory() {
+    local description="output directory"
+
+    if [ "$silent" != true ]; then
+      echo "$file Creating $description"
+    fi
+
+    local create_directory="$mkdir $output_directory"
+    if [ "$debug" == true ]; then
+      echo_var create_directory
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $create_directory
+    fi
+
+    # echo_breakpoint exit_code "$description" "created" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      if [ "$silent" != true ]; then
+        echo_success "${description^} created"
+      fi
+    else
+      echo_failed "create $description"
       exit 1
     fi
   }
@@ -452,7 +548,7 @@ install_basic() (
     local description="Bash script"
 
     if [ "$stop_creations" != true ]; then
-      local move="$mv $application_directory/$bash_script.sh $bash_script_filepath"
+      local move="$mv \"$application_directory/$bash_script.sh\" \"$bash_script_filepath\""
 
       if [ "$debug" == true ]; then
         echo_var move
@@ -472,6 +568,7 @@ install_basic() (
     fi
   }
 
+  # Modifies the access of the application Bash script to run for all users
   update_bash_script_access() {
     local description="access to Bash script"
 
@@ -496,13 +593,14 @@ install_basic() (
     fi
   }
 
+  # Moves the Libre Office macro template file into Libre Office's file structure
   move_libre_office_macro_template() {
     local description="Libre Office macro"
 
     if [ "$stop_creations" != true ]; then
       local source="$application_directory/$libre_office_macro_template"
       local target=$libre_office_macro_template_filepath
-      local move="$mv $source $target"
+      local move="$mv \"$source\" \"$target\""
 
       if [ "$debug" == true ]; then
         echo_var move
@@ -522,6 +620,7 @@ install_basic() (
     fi
   }
 
+  # Add value to the application config file
   update_application_config_file() {
     local description="application config file"
 
@@ -529,7 +628,7 @@ install_basic() (
       local current_filepath="$application_directory/$application_config_file"
 
       # Add version to config file
-      local add_version="echo \"version=$version\" | $cat - $current_filepath >temp && $mv temp $current_filepath"
+      local add_version="echo \"version=$version\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
       if [ "$debug" == true ]; then
         echo_var add_version
@@ -550,13 +649,14 @@ install_basic() (
     fi
   }
 
+  # Moves the application config file into the home directory
   move_application_config_file() {
     local description="application config file"
 
     if [ "$stop_creations" != true ]; then
       local source="$application_directory/$application_config_file"
       local target=$application_config_file_filepath
-      local move="$mv $source $target"
+      local move="$mv \"$source \"$target\""
 
       if [ "$debug" == true ]; then
         echo_var move
@@ -576,6 +676,7 @@ install_basic() (
     fi
   }
 
+  # Add values to the application preferences file
   update_application_preferences_file() {
     local description="application preferences file"
 
@@ -583,7 +684,7 @@ install_basic() (
       local current_filepath="$application_directory/$application_preferences_file"
 
       # Add output_directory and template PPT filepath to preferences file
-      local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | $cat - $current_filepath >temp && $mv temp $current_filepath"
+      local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
       if [ "$debug" == true ]; then
         echo_var add_preferences
@@ -604,13 +705,14 @@ install_basic() (
     fi
   }
 
+  # Moves the application config file into the home directory
   move_application_preferences_file() {
     local description="application preferences file"
 
     if [ "$stop_creations" != true ]; then
       local source="$application_directory/$application_preferences_file"
       local target=$application_preferences_file_filepath
-      local move="$mv $source $target"
+      local move="$mv \"$source\" \"$target\""
 
       if [ "$debug" == true ]; then
         echo_var move
@@ -630,6 +732,93 @@ install_basic() (
     fi
   }
 
+  # Removes directories from $application_directory that aren't needed
+  remove_extra_directories() {
+    local description="extra directories"
+
+    if [ "$silent" != true ]; then
+      echo "$trash Removing $description"
+    fi
+
+    local remove_directories="$rm -rf \"$application_directory/*/\""
+    if [ "$debug" == true ]; then
+      echo_var remove_directories
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $remove_directories
+    fi
+
+    # echo_breakpoint exit_code "$description" "removed" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      if [ "$silent" != true ]; then
+        echo_success "${description^} removed"
+      fi
+    else
+      echo_failed "remove $description"
+      exit 1
+    fi
+  }
+
+  # Removes files from $application_directory that aren't needed
+  remove_extra_files() {
+    local description="extra files"
+
+    if [ "$silent" != true ]; then
+      echo "$trash Removing $description"
+    fi
+
+    local remove_files="$find \"$application_directory\" -type f -not -name \"$template_ppt\" -delete"
+    if [ "$debug" == true ]; then
+      echo_var remove_files
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $remove_files
+    fi
+
+    # echo_breakpoint exit_code "$description" "removed" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      if [ "$silent" != true ]; then
+        echo_success "${description^} removed"
+      fi
+    else
+      echo_failed "remove $description"
+      exit 1
+    fi
+  }
+
+  # Removes lingering dot files from $application_directory that aren't needed
+  remove_dot_files() {
+    local description="dot files"
+
+    if [ "$silent" != true ]; then
+      echo "$trash Removing $description"
+    fi
+
+    local remove_dots="$rm -rf $application_directory/.* 2>/dev/null"
+    if [ "$debug" == true ]; then
+      echo_var remove_dots
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $remove_dots
+    fi
+
+    # echo_breakpoint exit_code "$description" "removed" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      if [ "$silent" != true ]; then
+        echo_success "${description^} removed"
+      fi
+    else
+      echo_failed "remove $description"
+      exit 1
+    fi
+  }
+
   # Start
 
   if [ "$1" == true ] && [ "$silent" != true ]; then
@@ -641,7 +830,13 @@ install_basic() (
   validate_bash_script_missing
   validate_libre_office_macro_template_missing
 
-  create_application_directory
+  fetch_application_zip
+  unzip_application_zip
+  remove_application_zip
+
+  move_src_files
+
+  create_output_directory
 
   move_bash_script
   update_bash_script_access
@@ -654,21 +849,9 @@ install_basic() (
   update_application_preferences_file
   move_application_preferences_file
 
-  remove_extra_files="$find $application_directory -type f -not -name \"$template_ppt\" -delete"
-
-  if [ "$debug" == true ]; then
-    echo_var remove_extra_files
-  fi
-
-  eval $remove_extra_files
-
-  remove_dot_files="$rm -rf $application_directory/.* 2>/dev/null"
-
-  if [ "$debug" == true ]; then
-    echo_var remove_dot_files
-  fi
-
-  eval $remove_dot_files
+  remove_extra_directories
+  remove_extra_files
+  remove_dot_files
 
   if [ "$silent" != true ]; then
     echo
