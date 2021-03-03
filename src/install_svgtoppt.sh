@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha29
+version=1.0.0-alpha30
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -526,7 +526,7 @@ install_basic() (
       echo "$file Moving $description"
     fi
 
-    local move_files="$mv \"$application_directory/src/*\" \"$application_directory\""
+    local move_files="$mv $application_directory/src/* $application_directory"
     if [ "$debug" == true ]; then
       echo_var move_files
     fi
