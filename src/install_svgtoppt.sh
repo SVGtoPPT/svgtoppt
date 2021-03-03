@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha35
+version=1.0.0-alpha36
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -518,7 +518,7 @@ install_basic() (
     fi
   }
 
-  # Moves files from $application_directory/src to $application_directory
+  # Moves files from $application_directory/src to application directory
   move_src_files() {
     local description="src files"
 
@@ -548,7 +548,37 @@ install_basic() (
     fi
   }
 
-  # Creates an "Output" directory under $application_directory
+  # Removes directories from application directory that aren't needed
+  remove_extra_directories() {
+    local description="extra directories"
+
+    if [ "$silent" != true ]; then
+      echo "$trash Removing $description"
+    fi
+
+    local remove_directories="$rm -rf $application_directory/*/"
+    if [ "$debug" == true ]; then
+      echo_var remove_directories
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $remove_directories
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "removed" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      if [ "$silent" != true ]; then
+        echo_success "${description^} removed"
+      fi
+    else
+      echo_failed "remove $description"
+      exit 1
+    fi
+  }
+
+  # Creates an "Output" directory under application directory
   create_output_directory() {
     local description="output directory"
 
@@ -765,21 +795,21 @@ install_basic() (
     fi
   }
 
-  # Removes directories from $application_directory that aren't needed
-  remove_extra_directories() {
-    local description="extra directories"
+  # Removes files from $application_directory that aren't needed
+  remove_extra_files() {
+    local description="extra files"
 
     if [ "$silent" != true ]; then
       echo "$trash Removing $description"
     fi
 
-    local remove_directories="$rm -rf $application_directory/*/"
+    local remove_files="$find \"$application_directory\" -type f -not -name \"$template_ppt\" -delete"
     if [ "$debug" == true ]; then
-      echo_var remove_directories
+      echo_var remove_files
     fi
 
     if [ "$stop_creations" != true ]; then
-      eval $remove_directories
+      eval $remove_files
     fi
     local exit_code=$?
 
@@ -795,15 +825,15 @@ install_basic() (
     fi
   }
 
-  # Removes files from $application_directory that aren't needed
-  remove_extra_files() {
-    local description="extra files"
+  # Removes lingering dot files from $application_directory that aren't needed
+  remove_dot_files() {
+    local description="dot files"
 
     if [ "$silent" != true ]; then
       echo "$trash Removing $description"
     fi
 
-    local remove_files="$find \"$application_directory\" -type f -not -name \"$template_ppt\" -delete"
+    local remove_files="$rm -rf $application_directory/.* 2>/dev/null"
     if [ "$debug" == true ]; then
       echo_var remove_files
     fi
@@ -843,6 +873,7 @@ install_basic() (
   rename_application_directory
 
   move_src_files
+  remove_extra_directories
   create_output_directory
 
   move_bash_script
@@ -856,8 +887,8 @@ install_basic() (
   update_application_preferences_file
   move_application_preferences_file
 
-  remove_extra_directories
   remove_extra_files
+  remove_dot_files
 
   if [ "$silent" != true ]; then
     echo
