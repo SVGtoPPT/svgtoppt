@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha28
+version=1.0.0-alpha29
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -261,7 +261,7 @@ install_basic() (
     local description="application directory"
 
     check_directory_missing $application_directory "$description"
-    exit_code=$?
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "found" 0 1
 
@@ -316,7 +316,7 @@ install_basic() (
     local description="Bash script"
 
     check_file_missing $bash_script_filepath
-    exit_code=$?
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "found" 0 1
 
@@ -358,7 +358,7 @@ install_basic() (
     local description="Libre Office macro"
 
     check_file_missing $libre_office_macro_template_filepath
-    exit_code=$?
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "found" 0 1
 
@@ -444,6 +444,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       eval $unzip_directory
     fi
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "unzipped" 1 0
 
@@ -453,6 +454,36 @@ install_basic() (
       fi
     else
       echo_failed "unzip $description: $bldwht$application_zip_file"
+      exit 1
+    fi
+  }
+
+  # Renames the application directory from the default created by unzipping the application zip
+  rename_application_directory() {
+    local description="application directory"
+
+    if [ "$silent" != true ]; then
+      echo "$file Renaming $description"
+    fi
+
+    local rename_dir="$mv \"$PWD/$application_name-$version\" \"$application_directory\""
+    if [ "$debug" == true ]; then
+      echo_var rename_dir
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $rename_dir
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "renamed" 1 0
+
+    if [[ $exit_code -eq 0 ]]; then
+      if [ "$silent" != true ]; then
+        echo_success "${description^} renamed"
+      fi
+    else
+      echo_failed "rename $description"
       exit 1
     fi
   }
@@ -473,6 +504,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       eval $remove_zip
     fi
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "removed" 1 0
 
@@ -502,6 +534,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       eval $move_files
     fi
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
@@ -531,6 +564,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       eval $create_directory
     fi
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "created" 1 0
 
@@ -609,7 +643,7 @@ install_basic() (
 
       eval $move
     fi
-    exit_code=$?
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
@@ -637,8 +671,7 @@ install_basic() (
 
       eval $add_version
     fi
-
-    exit_code=$?
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "updated" 1 0
 
@@ -665,7 +698,7 @@ install_basic() (
 
       eval $move
     fi
-    exit_code=$?
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
@@ -693,8 +726,7 @@ install_basic() (
 
       eval $add_preferences
     fi
-
-    exit_code=$?
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "updated" 1 0
 
@@ -721,7 +753,7 @@ install_basic() (
 
       eval $move
     fi
-    exit_code=$?
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
@@ -749,6 +781,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       eval $remove_directories
     fi
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "removed" 1 0
 
@@ -778,6 +811,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       eval $remove_files
     fi
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "removed" 1 0
 
@@ -807,6 +841,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       eval $remove_dots
     fi
+    local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "removed" 1 0
 
@@ -835,8 +870,9 @@ install_basic() (
   unzip_application_zip
   remove_application_zip
 
-  move_src_files
+  rename_application_directory
 
+  move_src_files
   create_output_directory
 
   move_bash_script
