@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha31
+version=1.0.0-alpha32
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -635,7 +635,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       local source="$application_directory/$libre_office_macro_template"
       local target=$libre_office_macro_template_filepath
-      local move="$mv \"$source\" \"$target\""
+      local move="$mv $source $target"
 
       if [ "$debug" == true ]; then
         echo_var move
@@ -690,7 +690,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       local source="$application_directory/$application_config_file"
       local target=$application_config_file_filepath
-      local move="$mv \"$source \"$target\""
+      local move="$mv $source $target"
 
       if [ "$debug" == true ]; then
         echo_var move
@@ -745,7 +745,7 @@ install_basic() (
     if [ "$stop_creations" != true ]; then
       local source="$application_directory/$application_preferences_file"
       local target=$application_preferences_file_filepath
-      local move="$mv \"$source\" \"$target\""
+      local move="$mv $source $target"
 
       if [ "$debug" == true ]; then
         echo_var move
