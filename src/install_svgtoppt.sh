@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha33
+version=1.0.0-alpha34
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -608,7 +608,7 @@ install_basic() (
     local description="access to Bash script"
 
     if [ "$stop_creations" != true ]; then
-      loval modify="chmod +x $bash_script_filepath"
+      local modify="chmod +x $bash_script_filepath"
 
       if [ "$debug" == true ]; then
         echo_var modify
