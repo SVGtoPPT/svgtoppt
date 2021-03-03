@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha34
+version=1.0.0-alpha35
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -773,7 +773,7 @@ install_basic() (
       echo "$trash Removing $description"
     fi
 
-    local remove_directories="$rm -rf \"$application_directory/*/\""
+    local remove_directories="$rm -rf $application_directory/*/"
     if [ "$debug" == true ]; then
       echo_var remove_directories
     fi
@@ -825,36 +825,6 @@ install_basic() (
     fi
   }
 
-  # Removes lingering dot files from $application_directory that aren't needed
-  remove_dot_files() {
-    local description="dot files"
-
-    if [ "$silent" != true ]; then
-      echo "$trash Removing $description"
-    fi
-
-    local remove_dots="$rm -rf $application_directory/.* 2>/dev/null"
-    if [ "$debug" == true ]; then
-      echo_var remove_dots
-    fi
-
-    if [ "$stop_creations" != true ]; then
-      eval $remove_dots
-    fi
-    local exit_code=$?
-
-    # echo_breakpoint exit_code "$description" "removed" 1 0
-
-    if [[ $exit_code -eq 0 ]]; then
-      if [ "$silent" != true ]; then
-        echo_success "${description^} removed"
-      fi
-    else
-      echo_failed "remove $description"
-      exit 1
-    fi
-  }
-
   # Start
 
   if [ "$1" == true ] && [ "$silent" != true ]; then
@@ -888,7 +858,6 @@ install_basic() (
 
   remove_extra_directories
   remove_extra_files
-  remove_dot_files
 
   if [ "$silent" != true ]; then
     echo
