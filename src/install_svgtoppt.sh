@@ -833,19 +833,20 @@ install_basic() (
       echo "$trash Removing $description"
     fi
 
-    local remove_files="$rm -rf $application_directory/.* 2>/dev/null"
+    local remove_dots="$rm -rf $application_directory/.* 2> /dev/null"
+    # echo_breakpoint remove_dots "$description" "removed" 1 0
     if [ "$debug" == true ]; then
-      echo_var remove_files
+      echo_var remove_dots
     fi
 
     if [ "$stop_creations" != true ]; then
-      eval $remove_files
+      eval $remove_dots
     fi
     local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "removed" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
+    if [[ $exit_code -eq 0 ]] || [[ $exit_code -eq 1 ]]; then
       if [ "$silent" != true ]; then
         echo_success "${description^} removed"
       fi
