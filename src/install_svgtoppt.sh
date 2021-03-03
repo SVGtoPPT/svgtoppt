@@ -1,12 +1,12 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha27
+version=1.0.0-alpha28
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
 application_preferences_file=$application_name-preferences
 application_preferences_file_filepath=~/.$application_preferences_file
-application_zip_file=$application_directory/$application_name.zip
+application_zip_file=$PWD/$application_name.zip
 
 # BASH SCRIPT CONFIG VALUES
 bash_script=svgtoppt
@@ -133,6 +133,7 @@ find_path() {
   printf "$path"
 }
 
+bash=$(find_path bash)
 brew=$(find_path brew)
 cat=$(find_path cat)
 curl=$(find_path curl)
@@ -865,7 +866,7 @@ install_complete() (
   install_homebrew() {
     local description="Homebrew"
 
-    local homebrew_install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+    local homebrew_install_cmd="$bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
     if [ "$silent" != true ]; then
       echo "$beer Starting $description installation: $txtund$homebrew_install_cmd$txtrst"
     fi
