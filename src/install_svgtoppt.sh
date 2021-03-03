@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha30
+version=1.0.0-alpha31
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -14,7 +14,7 @@ bash_script_filepath=/usr/local/bin/$bash_script
 
 # LIBRE OFFICE MACRO CONFIG VALUES
 libre_office_macro_template=SVGtoPPT_template.xba
-application_support_directory="Application\ Support"
+application_support_directory="Application Support"
 libre_office_macros_filepath=~/Library/$application_support_directory/LibreOffice/4/user/basic/Standard
 libre_office_macro_template_filepath=$libre_office_macros_filepath/$libre_office_macro
 
