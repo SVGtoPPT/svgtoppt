@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha41
+version=1.0.0-alpha42
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -973,7 +973,10 @@ install_complete() (
     install_libre_office
   fi
 
-  echo
+  if [ "$silent" != true ]; then
+    echo
+  fi
+
   install_basic false
 )
 
