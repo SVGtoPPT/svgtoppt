@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha40
+version=1.0.0-alpha41
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -419,7 +419,7 @@ install_basic() (
       echo_var unzip
     fi
 
-    local fetch_remote="$curl -L $remote_url > \"$application_zip_file\""
+    local fetch_remote="$curl -sL $remote_url > \"$application_zip_file\""
     if [ "$debug" == true ]; then
       echo_var fetch_remote
     fi
@@ -447,7 +447,7 @@ install_basic() (
       echo "$file Unzipping $description"
     fi
 
-    local unzip_directory="$unzip \"$application_zip_file\""
+    local unzip_directory="$unzip -q \"$application_zip_file\""
     if [ "$debug" == true ]; then
       echo_var unzip_directory
     fi
@@ -475,7 +475,7 @@ install_basic() (
       echo "$file Renaming $description"
     fi
 
-    local rename_dir="$mv $PWD/$application_name-$version $application_directory"
+    local rename_dir="$mv \"$PWD/$application_name-$version\" \"$application_directory\""
     if [ "$debug" == true ]; then
       echo_var rename_dir
     fi
@@ -611,7 +611,7 @@ install_basic() (
   move_bash_script() {
     local description="Bash script"
 
-    local move_file="$mv $application_directory/$bash_script.sh $bash_script_filepath"
+    local move_file="$mv \"$application_directory/$bash_script.sh\" \"$bash_script_filepath\""
 
     if [ "$debug" == true ]; then
       echo_var move_file
@@ -621,8 +621,6 @@ install_basic() (
       eval $move_file
     fi
     local exit_code=$?
-
-    echo_var exit_code
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
@@ -665,14 +663,14 @@ install_basic() (
 
     local source="$application_directory/$libre_office_macro_template"
     local target=$libre_office_macro_template_filepath
-    local move="$mv $source $target"
+    local move_file="$mv \"$source\" \"$target\""
 
     if [ "$debug" == true ]; then
-      echo_var move
+      echo_var move_file
     fi
 
     if [ "$stop_creations" != true ]; then
-      eval $move
+      eval $move_file
     fi
     local exit_code=$?
 
@@ -693,7 +691,7 @@ install_basic() (
     local current_filepath="$application_directory/$application_config_file"
 
     # Add version to config file
-    local add_version="echo \"version=$version\" | $cat - $current_filepath >temp && $mv temp $current_filepath"
+    local add_version="echo \"version=$version\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
     if [ "$debug" == true ]; then
       echo_var add_version
@@ -720,7 +718,7 @@ install_basic() (
 
     local source="$application_directory/$application_config_file"
     local target=$application_config_file_filepath
-    local move="$mv $source $target"
+    local move="$mv \"$source\" \"$target\""
 
     if [ "$debug" == true ]; then
       echo_var move
@@ -748,7 +746,7 @@ install_basic() (
     local current_filepath="$application_directory/$application_preferences_file"
 
     # Add output_directory and template PPT filepath to preferences file
-    local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | $cat - $current_filepath >temp && $mv temp $current_filepath"
+    local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
     if [ "$debug" == true ]; then
       echo_var add_preferences
@@ -775,7 +773,7 @@ install_basic() (
 
     local source="$application_directory/$application_preferences_file"
     local target=$application_preferences_file_filepath
-    local move="$mv $source $target"
+    local move="$mv \"$source\" \"$target\""
 
     if [ "$debug" == true ]; then
       echo_var move
