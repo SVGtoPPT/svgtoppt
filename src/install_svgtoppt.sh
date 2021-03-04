@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha37
+version=1.0.0-alpha38
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -18,10 +18,7 @@ application_support_directory="Application Support"
 libre_office_macros_filepath=~/Library/$application_support_directory/LibreOffice/4/user/basic/Standard
 libre_office_macro_template_filepath=$libre_office_macros_filepath/$libre_office_macro
 
-# APPLICATION DEFAULTS
-output_directory=$application_directory/Output
-template_ppt=template.ppt
-template_ppt_filepath=$application_directory/$template_ppt
+# Included for nonvolatile debugging
 stop_creations=false
 
 # TEXT FORMATS
@@ -408,22 +405,22 @@ install_basic() (
         echo_var unzip
       fi
 
-      local create_directory="$curl -L $remote_url > \"$application_zip_file\""
+      local fetch_remote="$curl -L $remote_url > \"$application_zip_file\""
       if [ "$debug" == true ]; then
-        echo_var create_directory
+        echo_var fetch_remote
       fi
-      eval $create_directory
+      eval $fetch_remote
     fi
     local exit_code=$?
 
-    # echo_breakpoint exit_code "$description" "created" 1 0
+    # echo_breakpoint exit_code "$description" "fetched" 1 0
 
     if [[ $exit_code -eq 0 ]]; then
       if [ "$silent" != true ]; then
-        echo_success "${description^} created"
+        echo_success "${description^} fetched"
       fi
     else
-      echo_failed "create $description: $bldwht$application_directory"
+      echo_failed "fetch $description: $bldwht$application_directory"
       exit 1
     fi
   }
@@ -995,6 +992,11 @@ while getopts "a:i:drsx" option; do
     x) stop_creations=true ;;
   esac
 done
+
+# APPLICATION DEFAULTS
+output_directory=$application_directory/Output
+template_ppt=template.ppt
+template_ppt_filepath=$application_directory/$template_ppt
 
 # Valides install_type and routes to install functions
 case "$install_type" in
