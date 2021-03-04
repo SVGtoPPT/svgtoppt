@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha38
+version=1.0.0-alpha39
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -609,16 +609,18 @@ install_basic() (
   move_bash_script() {
     local description="Bash script"
 
+    local move_file="$mv $application_directory/$bash_script.sh $bash_script_filepath"
+
+    if [ "$debug" == true ]; then
+      echo_var move_file
+    fi
+
     if [ "$stop_creations" != true ]; then
-      local move="$mv \"$application_directory/$bash_script.sh\" \"$bash_script_filepath\""
-
-      if [ "$debug" == true ]; then
-        echo_var move
-      fi
-
-      eval $move
+      eval $move_file
     fi
     local exit_code=$?
+
+    echo_var exit_code
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
