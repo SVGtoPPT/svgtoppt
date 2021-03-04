@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha39
+version=1.0.0-alpha40
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -277,19 +277,24 @@ install_basic() (
         echo
       fi
 
+      local remove_directory="$rm -rf $application_directory"
+
+      if [ "$debug" == true ]; then
+        echo_var remove_directory
+      fi
+
       if [ "$stop_creations" != true ]; then
-        local remove_directory="$rm -rf $application_directory"
-
-        if [ "$debug" == true ]; then
-          echo_var remove_directory
-        fi
-
         eval $remove_directory
+      fi
+      local exit_code=$?
 
-        if [[ $? -ne 0 ]]; then
-          echo_error "deleting $description" $application_directory
-          exit 1
-        fi
+      # echo_breakpoint exit_code "$description" "removed" 1 0
+
+      if [[ $exit_code -ne 0 ]]; then
+        echo_error "deleting $description" $application_directory
+        exit 1
+      elif [ "$silent" != true ]; then
+        echo_success "Existing $description deleted"
       fi
     fi
   }
@@ -331,19 +336,24 @@ install_basic() (
         echo
       fi
 
+      local remove_directory="$rm $bash_script_filepath"
+
+      if [ "$debug" == true ]; then
+        echo_var remove_directory
+      fi
+
       if [ "$stop_creations" != true ]; then
-        local remove_directory="$rm $bash_script_filepath"
-
-        if [ "$debug" == true ]; then
-          echo_var remove_directory
-        fi
-
         eval $remove_directory
+      fi
+      local exit_code=$?
 
-        if [[ $? -ne 0 ]]; then
-          echo_error "deleting $description" $bash_script_filepath
-          exit 1
-        fi
+      # echo_breakpoint exit_code "$description" "removed" 1 0
+
+      if [[ $exit_code -ne 0 ]]; then
+        echo_error "deleting $description" $bash_script_filepath
+        exit 1
+      elif [ "$silent" != true ]; then
+        echo_success "Existing $description deleted"
       fi
     fi
   }
@@ -373,19 +383,24 @@ install_basic() (
         echo
       fi
 
+      local remove_file="$rm $libre_office_macro_template_filepath"
+
+      if [ "$debug" == true ]; then
+        echo_var remove_file
+      fi
+
       if [ "$stop_creations" != true ]; then
-        local remove_file="$rm $libre_office_macro_template_filepath"
-
-        if [ "$debug" == true ]; then
-          echo_var remove_file
-        fi
-
         eval $remove_file
+      fi
+      local exit_code=$?
 
-        if [[ $? -ne 0 ]]; then
-          echo_error "deleting $description" $libre_office_macro_template_filepath
-          exit 1
-        fi
+      # echo_breakpoint exit_code "$description" "deleted" 1 0
+
+      if [[ $exit_code -ne 0 ]]; then
+        echo_error "deleting $description" $libre_office_macro_template_filepath
+        exit 1
+      elif [ "$silent" != true ]; then
+        echo_success "Existing $description deleted"
       fi
     fi
   }
@@ -398,30 +413,29 @@ install_basic() (
       echo "$octo Fetching $description from GitHub"
     fi
 
+    remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
+
+    if [ "$debug" == true ]; then
+      echo_var unzip
+    fi
+
+    local fetch_remote="$curl -L $remote_url > \"$application_zip_file\""
+    if [ "$debug" == true ]; then
+      echo_var fetch_remote
+    fi
+
     if [ "$stop_creations" != true ]; then
-      remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
-
-      if [ "$debug" == true ]; then
-        echo_var unzip
-      fi
-
-      local fetch_remote="$curl -L $remote_url > \"$application_zip_file\""
-      if [ "$debug" == true ]; then
-        echo_var fetch_remote
-      fi
       eval $fetch_remote
     fi
     local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "fetched" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
-      if [ "$silent" != true ]; then
-        echo_success "${description^} fetched"
-      fi
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_failed "fetch $description: $bldwht$application_directory"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} fetched"
     fi
   }
 
@@ -445,13 +459,11 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "unzipped" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
-      if [ "$silent" != true ]; then
-        echo_success "${description^} unzipped"
-      fi
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_failed "unzip $description: $bldwht$application_zip_file"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} unzipped"
     fi
   }
 
@@ -463,7 +475,7 @@ install_basic() (
       echo "$file Renaming $description"
     fi
 
-    local rename_dir="$mv \"$PWD/$application_name-$version\" \"$application_directory\""
+    local rename_dir="$mv $PWD/$application_name-$version $application_directory"
     if [ "$debug" == true ]; then
       echo_var rename_dir
     fi
@@ -475,13 +487,11 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "renamed" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
-      if [ "$silent" != true ]; then
-        echo_success "${description^} renamed"
-      fi
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_failed "rename $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} renamed"
     fi
   }
 
@@ -505,13 +515,11 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "removed" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
-      if [ "$silent" != true ]; then
-        echo_success "${description^} removed"
-      fi
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_failed "remove $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} removed"
     fi
   }
 
@@ -535,13 +543,11 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
-      if [ "$silent" != true ]; then
-        echo_success "${description^} moved"
-      fi
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_failed "move $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} moved"
     fi
   }
 
@@ -565,13 +571,11 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "removed" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
-      if [ "$silent" != true ]; then
-        echo_success "${description^} removed"
-      fi
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_failed "remove $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} removed"
     fi
   }
 
@@ -595,13 +599,11 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "created" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
-      if [ "$silent" != true ]; then
-        echo_success "${description^} created"
-      fi
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_failed "create $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} created"
     fi
   }
 
@@ -624,11 +626,11 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
-    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
-      echo_success "${description^} moved"
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_failed "move $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} moved"
     fi
   }
 
@@ -636,24 +638,24 @@ install_basic() (
   update_bash_script_access() {
     local description="access to Bash script"
 
+    local modify="chmod +x $bash_script_filepath"
+
+    if [ "$debug" == true ]; then
+      echo_var modify
+    fi
+
     if [ "$stop_creations" != true ]; then
-      local modify="chmod +x $bash_script_filepath"
-
-      if [ "$debug" == true ]; then
-        echo_var modify
-      fi
-
       eval $modify
     fi
     local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "changed" 1 0
 
-    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
-      echo_success "${description^} updated"
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_failed "change $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} updated"
     fi
   }
 
@@ -661,26 +663,26 @@ install_basic() (
   move_libre_office_macro_template() {
     local description="Libre Office macro"
 
+    local source="$application_directory/$libre_office_macro_template"
+    local target=$libre_office_macro_template_filepath
+    local move="$mv $source $target"
+
+    if [ "$debug" == true ]; then
+      echo_var move
+    fi
+
     if [ "$stop_creations" != true ]; then
-      local source="$application_directory/$libre_office_macro_template"
-      local target=$libre_office_macro_template_filepath
-      local move="$mv \"$source\" \"$target\""
-
-      if [ "$debug" == true ]; then
-        echo_var move
-      fi
-
       eval $move
     fi
     local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
-    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
-      echo_success "${description^} moved"
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_error "moving $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} moved"
     fi
   }
 
@@ -688,27 +690,27 @@ install_basic() (
   update_application_config_file() {
     local description="application config file"
 
+    local current_filepath="$application_directory/$application_config_file"
+
+    # Add version to config file
+    local add_version="echo \"version=$version\" | $cat - $current_filepath >temp && $mv temp $current_filepath"
+
+    if [ "$debug" == true ]; then
+      echo_var add_version
+    fi
+
     if [ "$stop_creations" != true ]; then
-      local current_filepath="$application_directory/$application_config_file"
-
-      # Add version to config file
-      local add_version="echo \"version=$version\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
-
-      if [ "$debug" == true ]; then
-        echo_var add_version
-      fi
-
       eval $add_version
     fi
     local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "updated" 1 0
 
-    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
-      echo_success "${description^} updated"
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_error "updating $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} updated"
     fi
   }
 
@@ -716,26 +718,26 @@ install_basic() (
   move_application_config_file() {
     local description="application config file"
 
+    local source="$application_directory/$application_config_file"
+    local target=$application_config_file_filepath
+    local move="$mv $source $target"
+
+    if [ "$debug" == true ]; then
+      echo_var move
+    fi
+
     if [ "$stop_creations" != true ]; then
-      local source="$application_directory/$application_config_file"
-      local target=$application_config_file_filepath
-      local move="$mv \"$source\" \"$target\""
-
-      if [ "$debug" == true ]; then
-        echo_var move
-      fi
-
       eval $move
     fi
     local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
-    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
-      echo_success "${description^} moved"
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_error "moving $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} moved"
     fi
   }
 
@@ -743,27 +745,27 @@ install_basic() (
   update_application_preferences_file() {
     local description="application preferences file"
 
+    local current_filepath="$application_directory/$application_preferences_file"
+
+    # Add output_directory and template PPT filepath to preferences file
+    local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | $cat - $current_filepath >temp && $mv temp $current_filepath"
+
+    if [ "$debug" == true ]; then
+      echo_var add_preferences
+    fi
+
     if [ "$stop_creations" != true ]; then
-      local current_filepath="$application_directory/$application_preferences_file"
-
-      # Add output_directory and template PPT filepath to preferences file
-      local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
-
-      if [ "$debug" == true ]; then
-        echo_var add_preferences
-      fi
-
       eval $add_preferences
     fi
     local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "updated" 1 0
 
-    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
-      echo_success "${description^} updated"
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_error "updating $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} updated"
     fi
   }
 
@@ -771,26 +773,26 @@ install_basic() (
   move_application_preferences_file() {
     local description="application preferences file"
 
+    local source="$application_directory/$application_preferences_file"
+    local target=$application_preferences_file_filepath
+    local move="$mv $source $target"
+
+    if [ "$debug" == true ]; then
+      echo_var move
+    fi
+
     if [ "$stop_creations" != true ]; then
-      local source="$application_directory/$application_preferences_file"
-      local target=$application_preferences_file_filepath
-      local move="$mv \"$source\" \"$target\""
-
-      if [ "$debug" == true ]; then
-        echo_var move
-      fi
-
       eval $move
     fi
     local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
-    if [[ $exit_code -eq 0 ]] && [ "$silent" != true ]; then
-      echo_success "${description^} moved"
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_error "moving $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} moved"
     fi
   }
 
@@ -814,13 +816,11 @@ install_basic() (
 
     # echo_breakpoint exit_code "$description" "removed" 1 0
 
-    if [[ $exit_code -eq 0 ]]; then
-      if [ "$silent" != true ]; then
-        echo_success "${description^} removed"
-      fi
-    else
+    if [[ $exit_code -ne 0 ]]; then
       echo_failed "remove $description"
       exit 1
+    elif [ "$silent" != true ]; then
+      echo_success "${description^} removed"
     fi
   }
 
