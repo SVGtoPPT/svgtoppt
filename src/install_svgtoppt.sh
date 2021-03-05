@@ -74,7 +74,7 @@ echo_bold() {
 }
 
 echo_success() {
-  echo $green"$checkmark $1 successfully$txtrst"
+  echo $green"$checkmark ${1^} successfully$txtrst"
 }
 
 echo_already_exists() {
@@ -90,7 +90,7 @@ echo_failed() {
 }
 
 echo_error() {
-  echo $bldred"$exclamation Error $1$txtrst"
+  echo $bldred"$exclamation Error: $1$txtrst"
 }
 
 echo_debug() {
@@ -130,6 +130,7 @@ find_path() {
   printf "$path"
 }
 
+# Basic commands
 bash=$(find_path bash)
 brew=$(find_path brew)
 cat=$(find_path cat)
@@ -187,7 +188,7 @@ check_homebrew_installed() {
   else
     local found=1
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo_already_installed "$description" $homebrew_location
     fi
   fi
@@ -227,7 +228,7 @@ check_libre_office_installed() {
   else
     local found=1
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo_already_installed "$description" $libre_office_location
     fi
   fi
@@ -291,9 +292,9 @@ install_basic() (
       # echo_breakpoint exit_code "$description" "removed" 1 0
 
       if [[ $exit_code -ne 0 ]]; then
-        echo_error "deleting $description" $application_directory
+        echo_error "Deleting $description failed" $application_directory
         exit 1
-      elif [ "$silent" != true ]; then
+      elif [ "$quiet" != true ]; then
         echo_success "Existing $description deleted"
       fi
     fi
@@ -350,9 +351,9 @@ install_basic() (
       # echo_breakpoint exit_code "$description" "removed" 1 0
 
       if [[ $exit_code -ne 0 ]]; then
-        echo_error "deleting $description" $bash_script_filepath
+        echo_error "Deleting $description failed" $bash_script_filepath
         exit 1
-      elif [ "$silent" != true ]; then
+      elif [ "$quiet" != true ]; then
         echo_success "Existing $description deleted"
       fi
     fi
@@ -397,9 +398,9 @@ install_basic() (
       # echo_breakpoint exit_code "$description" "deleted" 1 0
 
       if [[ $exit_code -ne 0 ]]; then
-        echo_error "deleting $description" $libre_office_macro_template_filepath
+        echo_error "Deleting $description failed" $libre_office_macro_template_filepath
         exit 1
-      elif [ "$silent" != true ]; then
+      elif [ "$quiet" != true ]; then
         echo_success "Existing $description deleted"
       fi
     fi
@@ -409,7 +410,7 @@ install_basic() (
   fetch_application_zip() {
     local description="application zip"
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$octo Fetching $description from GitHub"
     fi
 
@@ -434,8 +435,8 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       echo_failed "fetch $description: $bldwht$application_directory"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} fetched"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description fetched"
     fi
   }
 
@@ -443,7 +444,7 @@ install_basic() (
   unzip_application_zip() {
     local description="application zip"
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$file Unzipping $description"
     fi
 
@@ -462,8 +463,8 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       echo_failed "unzip $description: $bldwht$application_zip_file"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} unzipped"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description unzipped"
     fi
   }
 
@@ -471,7 +472,7 @@ install_basic() (
   rename_application_directory() {
     local description="application directory"
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$file Renaming $description"
     fi
 
@@ -490,8 +491,8 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       echo_failed "rename $description"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} renamed"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description renamed"
     fi
   }
 
@@ -499,7 +500,7 @@ install_basic() (
   remove_application_zip() {
     local description="application zip"
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$trash Removing $description"
     fi
 
@@ -518,8 +519,8 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       echo_failed "remove $description"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} removed"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description removed"
     fi
   }
 
@@ -527,7 +528,7 @@ install_basic() (
   move_src_files() {
     local description="src files"
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$file Moving $description"
     fi
 
@@ -546,8 +547,8 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       echo_failed "move $description"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} moved"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description moved"
     fi
   }
 
@@ -555,7 +556,7 @@ install_basic() (
   remove_extra_directories() {
     local description="extra directories"
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$trash Removing $description"
     fi
 
@@ -574,8 +575,8 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       echo_failed "remove $description"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} removed"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description removed"
     fi
   }
 
@@ -583,7 +584,7 @@ install_basic() (
   create_output_directory() {
     local description="output directory"
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$file Creating $description"
     fi
 
@@ -602,8 +603,8 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       echo_failed "create $description"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} created"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description created"
     fi
   }
 
@@ -627,8 +628,8 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       echo_failed "move $description"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} moved"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description moved"
     fi
   }
 
@@ -652,8 +653,8 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       echo_failed "change $description"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} updated"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description updated"
     fi
   }
 
@@ -677,10 +678,10 @@ install_basic() (
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_error "moving $description"
+      echo_error "Moving $description failed"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} moved"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description moved"
     fi
   }
 
@@ -705,10 +706,10 @@ install_basic() (
     # echo_breakpoint exit_code "$description" "updated" 1 0
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_error "updating $description"
+      echo_error "Updating $description failed"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} updated"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description updated"
     fi
   }
 
@@ -732,10 +733,10 @@ install_basic() (
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_error "moving $description"
+      echo_error "Moving $description failed"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} moved"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description moved"
     fi
   }
 
@@ -760,10 +761,10 @@ install_basic() (
     # echo_breakpoint exit_code "$description" "updated" 1 0
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_error "updating $description"
+      echo_error "Updating $description failed"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} updated"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description updated"
     fi
   }
 
@@ -787,10 +788,10 @@ install_basic() (
     # echo_breakpoint exit_code "$description" "moved" 1 0
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_error "moving $description"
+      echo_error "Moving $description failed"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} moved"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description moved"
     fi
   }
 
@@ -798,7 +799,7 @@ install_basic() (
   remove_extra_files() {
     local description="extra files"
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$trash Removing $description"
     fi
 
@@ -817,8 +818,8 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       echo_failed "remove $description"
       exit 1
-    elif [ "$silent" != true ]; then
-      echo_success "${description^} removed"
+    elif [ "$quiet" != true ]; then
+      echo_success "$description removed"
     fi
   }
 
@@ -826,7 +827,7 @@ install_basic() (
   remove_dot_files() {
     local description="dot files"
 
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$trash Removing $description"
     fi
 
@@ -844,8 +845,8 @@ install_basic() (
     # echo_breakpoint exit_code "$description" "removed" 1 0
 
     if [[ $exit_code -eq 0 ]] || [[ $exit_code -eq 1 ]]; then
-      if [ "$silent" != true ]; then
-        echo_success "${description^} removed"
+      if [ "$quiet" != true ]; then
+        echo_success "$description removed"
       fi
     else
       echo_failed "remove $description"
@@ -855,7 +856,7 @@ install_basic() (
 
   # Start
 
-  if [ "$1" == true ] && [ "$silent" != true ]; then
+  if [ "$1" == true ] && [ "$quiet" != true ]; then
     echo "$svg Starting basic installation of SVG to PPT"
     echo
   fi
@@ -888,7 +889,7 @@ install_basic() (
   remove_extra_files
   remove_dot_files
 
-  if [ "$silent" != true ]; then
+  if [ "$quiet" != true ]; then
     echo
     echo_success $txtbld"SVG to PPT installed"
   fi
@@ -901,7 +902,7 @@ install_complete() (
     local description="Homebrew"
 
     local homebrew_install_cmd="$bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$beer Starting $description installation: $txtund$homebrew_install_cmd$txtrst"
     fi
 
@@ -914,12 +915,12 @@ install_complete() (
     fi
     local exit_code=$?
 
-    # echo_breakpoint homebrew_location "$description" "install" 0 1
+    # echo_breakpoint homebrew_location "$description" "installed" 0 1
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_error "installing $description"
+      echo_error "Installing $description failed"
       exit 1
-    elif [ "$silent" != true ]; then
+    elif [ "$quiet" != true ]; then
       echo_success "$description installed"
     fi
   }
@@ -929,7 +930,7 @@ install_complete() (
     local description="Libre Office"
 
     local libre_office_install_cmd="$brew install --cask libreoffice"
-    if [ "$silent" != true ]; then
+    if [ "$quiet" != true ]; then
       echo "$libre Starting $description installation: $txtund$libre_office_install_cmd$txtrst"
     fi
 
@@ -942,17 +943,17 @@ install_complete() (
     fi
     local exit_code=$?
 
-    # echo_breakpoint homebrew_location "$description" "install" 0 1
+    # echo_breakpoint homebrew_location "$description" "installed" 0 1
 
     if [[ $exit_code -ne 0 ]]; then
-      echo_error "installing $description with Homebrew"
+      echo_error "Installing $description with Homebrew failed"
       exit 1
-    elif [ "$silent" != true ]; then
+    elif [ "$quiet" != true ]; then
       echo_success "$description installed"
     fi
   }
 
-  if [ "$silent" != true ]; then
+  if [ "$quiet" != true ]; then
     echo_bold "$svg Starting complete installation of SVG to PPT"
     echo
   fi
@@ -973,7 +974,7 @@ install_complete() (
     install_libre_office
   fi
 
-  if [ "$silent" != true ]; then
+  if [ "$quiet" != true ]; then
     echo
   fi
 
@@ -985,12 +986,12 @@ install_complete() (
 install_type=$1
 
 # Check for flags overwriting defaults
-while getopts "a:i:drsx" option; do
+while getopts "a:i:dqsx" option; do
   case "${option}" in
     a) application_directory=${OPTARG} ;;
     i) install_type=${OPTARG} ;;
+    q) quiet=true ;;
     r) reinstall=true ;;
-    s) silent=true ;;
     d) debug=true ;;
     x) stop_creations=true ;;
   esac

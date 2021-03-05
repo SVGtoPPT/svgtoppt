@@ -64,7 +64,7 @@ echo_bold() {
 }
 
 echo_success() {
-  echo $green"$checkmark $1 successfully$txtrst"
+  echo $green"$checkmark ${1^} successfully$txtrst"
 }
 
 echo_already_exists() {
@@ -76,7 +76,7 @@ echo_failed() {
 }
 
 echo_error() {
-  echo $bldred"$exclamation Error $1$txtrst"
+  echo $bldred"$exclamation Error: $1$txtrst"
 }
 
 echo_debug() {
@@ -104,7 +104,209 @@ echo_breakpoint() {
   echo
 }
 
+# Basic commands
+cp=$(find_path cp)
+curl=$(find_path curl)
+mv=$(find_path mv)
+sed=$(find_path sed)
+
 main() {
+  validate_inputs() {
+    # Check if SVG file exists
+    if test -f $first_parameter && [ ! -z $first_parameter ]; then
+      svg_filepath=$first_parameter
+    elif test -f $input_svg; then
+      svg_filepath=$input_svg
+    elif test -f $PWD/$input_svg; then
+      svg_filepath=$PWD/$input_svg
+    else
+      echo_failed "find input SVG file: $input_svg"
+      exit 2
+    fi
+
+    # Check if SVG extension is present
+    if [[ "$svg_filepath" != *"$svg_file_ext" ]]; then
+      echo_failed "find '$svg_file_ext' at the end of the input file: $bldwht$svg_filepath$txtrst"
+      exit 2
+    fi
+
+    # If template PPT passed in, check if it exists
+    if [ ! -z $template_ppt ]; then
+      if test -f $PWD/$template_ppt; then
+        template_ppt_filepath=$PWD/$template_ppt
+      elif test -f $template_ppt; then
+        template_ppt_filepath=$template_ppt
+      else
+        echo_failed "find template PPT file $template_ppt"
+        exit 2
+      fi
+    fi
+
+    # Validate force_ppt for true or false
+    if [ "$force_ppt" != true ] && [ "$force_ppt" != false ]; then
+      echo_error "Input flag force_ppt (-f) should only be set to true or false"
+      exit 2
+    fi
+
+    # Validate where_to_open for valid option
+    case $where_to_open in
+      none)    where_to_open= ;;
+      keynote) where_to_open=Keynote ;;
+      power)   where_to_open="Microsoft PowerPoint" ;;
+      libre)   where_to_open=LibreOffice ;;
+      oo)      where_to_open=OpenOffice ;;
+      *)
+        echo_error "Input flag where_to_open (-w) should only be set to: none, keynote, power, libre, oo"
+        exit 2
+        ;;
+    esac
+  }
+
+  # Figures out the name of the PPT file based on $force_ppt and existing PPT files
+  determine_ppt_name() {
+    if [ "$force_ppt" != true ] && [ -f $ppt_filepath ]; then
+      while [ -f $ppt_filepath ]; do
+        if [ -z $ppt_name_suffix ]; then
+          ppt_name_suffix=-1
+        else
+          ppt_name_suffix=$((ppt_name_suffix - 1))
+        fi
+
+        ppt_filepath=$output_directory/$ppt_name$ppt_name_suffix$ppt_file_ext
+      done
+
+      if [ "$stop_creations" != true ] && [ "$quiet" != true ]; then
+        printf $yellow"$warn Warning: $ppt_name$ppt_file_ext already exists, so creating new file $ppt_name$ppt_name_suffix$ppt_file_ext in directory: $output_directory$txtrst\n"
+      fi
+    elif [ "$force_ppt" == true ] && [ -f $ppt_filepath ]; then
+      if [ "$stop_creations" != true ] && [ "$quiet" != true ]; then
+        printf "Overwriting file: $ppt_filepath\n"
+      fi
+    else
+      if [ "$stop_creations" != true ] && [ "$quiet" != true ]; then
+        printf "Creating new file: $ppt_filepath\n"
+      fi
+    fi
+  }
+
+  # Copies the template to create/overwrite macro file to be used
+  create_macro_from_template() {
+    local description="Libre Office macro template"
+    local copy_file="$cp $libre_office_macro_template_filepath $libre_office_macro_filepath"
+
+    if [ "$debug" == true ]; then
+      echo_var copy_file
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $copy_file
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "copied" 1 0
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_failed "copy $description"
+      exit 1
+    elif [ "$quiet" != true ]; then
+      echo_success "$description copied"
+    fi
+  }
+
+  # Write filepath of SVG to macro for Libre Office to read
+  update_macro_with_svg() {
+    local svg_sed="sed -i '' \"s~SVG_FILEPATH~$svg_filepath~\" $libre_office_macro_filepath"
+    if [ "$debug" == true ]; then
+      echo_var svg_sed
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $svg_sed
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "updated" 1 0
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_failed "update $description"
+      exit 1
+    elif [ "$quiet" != true ]; then
+      echo_success "$description updated"
+    fi
+  }
+
+  # Write filepath of PPT to macro for Libre Office to read
+  update_macro_with_ppt() {
+    local ppt_sed="sed -i '' \"s~PPT_FILEPATH~$ppt_filepath~\" $libre_office_macro_filepath"
+    if [ "$debug" == true ]; then
+      echo_var ppt_sed
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $ppt_sed
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "updated" 1 0
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_failed "update $description"
+      exit 1
+    elif [ "$quiet" != true ]; then
+      echo_success "$description updated"
+    fi
+  }
+
+  # Starts the Libre Office macro on the template PPT
+  launch_libre_office_macro() {
+    local description="Libre Office macro"
+
+    local libre_office_cmd="/Applications/LibreOffice.app/Contents/MacOS/soffice --invisible --headless $template_ppt_filepath \"vnd.sun.star.script:Standard.$libre_office_macro.Main?language=Basic&location=application\""
+
+    if [ "$debug" == true ]; then
+      echo_var libre_office_cmd
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $libre_office_cmd
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "launched" 1 0
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_failed "launch $description"
+      exit 1
+    elif [ "$quiet" != true ]; then
+      echo_success "$description launched"
+    fi
+  }
+
+  # Opens the new PPT file in an application
+  open_ppt() {
+    local description="new PPT file"
+
+    local open_cmd="open -a $where_to_open $ppt_filepath"
+
+    if [ "$debug" == true ]; then
+      echo_var open_cmd
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $open_cmd
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "opened" 1 0
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_failed "open $description"
+      exit 1
+    elif [ "$quiet" != true ]; then
+      echo_success "$description opened"
+    fi
+  }
+
   if [ "$debug" == true ]; then
     printf $bldcyn"\n~INPUT FOR DEBUGGING~\n\n"
     printf "# DEFAULTS\n"
@@ -128,146 +330,41 @@ main() {
     IFS='.' read -r ppt_name string <<<"$ppt_name"
   fi
 
-  # Check if SVG file exists
-  if test -f $first_parameter && [ ! -z $first_parameter ]; then
-    svg_filepath=$first_parameter
-  elif test -f $input_svg; then
-    svg_filepath=$input_svg
-  elif test -f $PWD/$input_svg; then
-    svg_filepath=$PWD/$input_svg
-  else
-    echo_failed "input SVG file: $input_svg"
-    exit 2
-  fi
-
-  # Check if SVG extension is present
-  if [[ "$svg_filepath" != *"$svg_file_ext" ]]; then
-    echo_failed "find '$svg_file_ext' at the end of the input file: $bldwht$svg_filepath$txtrst"
-    exit 2
-  fi
-
-  # If template PPT passed in, check if it exists
-  if [ ! -z $template_ppt ]; then
-    if test -f $PWD/$template_ppt; then
-      template_ppt_filepath=$PWD/$template_ppt
-    elif test -f $template_ppt; then
-      template_ppt_filepath=$template_ppt
-    else
-      echo "Input error: Can't find template PPT file $template_ppt"
-      exit 2
-    fi
-  fi
-
-  # Validate force_ppt for true or false
-  if [ "$force_ppt" != true ] && [ "$force_ppt" != false ]; then
-    echo "Input error: force_ppt flag (-f) should only be set to true or false"
-    exit 2
-  fi
-
-  # Validate where_to_open for valid option
-  case $where_to_open in
-    none) where_to_open= ;;
-    keynote) where_to_open=Keynote ;;
-    power) where_to_open="Microsoft PowerPoint" ;;
-    libre) where_to_open=LibreOffice ;;
-    oo) where_to_open=OpenOffice ;;
-    *)
-      echo "Input error: where_to_open flag (-w) should only be set to: none, keynote, power, libre, oo"
-      exit 2
-      ;;
-  esac
+  validate_inputs
 
   # Set SVG flag-dependent defaults
-  svg_name_with_ext=${input_svg##*/}
+  local svg_name_with_ext=${input_svg##*/}
   IFS='.' read -r svg_name string <<<"$svg_name_with_ext"
 
   # Set PPT flag-dependent defaults
   if [ -z $ppt_name ]; then
     ppt_name=$svg_name
   fi
-  ppt_filepath=$output_directory/$ppt_name$ppt_file_ext
+  local ppt_filepath=$output_directory/$ppt_name$ppt_file_ext
 
-  if [ "$force_ppt" != true ] && [ -f $ppt_filepath ]; then
-    while [ -f $ppt_filepath ]; do
-      if [ -z $ppt_name_suffix ]; then
-        ppt_name_suffix=-1
-      else
-        ppt_name_suffix=$((ppt_name_suffix - 1))
-      fi
+  determine_ppt_name
 
-      ppt_filepath=$output_directory/$ppt_name$ppt_name_suffix$ppt_file_ext
-    done
+  create_macro_from_template
+  update_macro_with_svg
+  update_macro_with_ppt
 
-    if [ "$stop_creations" != true ]; then
-      printf $yellow"$warn Warning: $ppt_name$ppt_file_ext already exists, so creating new file $ppt_name$ppt_name_suffix$ppt_file_ext in directory: $output_directory$txtrst\n"
-    fi
-  elif [ "$force_ppt" == true ] && [ -f $ppt_filepath ]; then
-    if [ "$stop_creations" != true ]; then
-      printf "Overwriting file: $ppt_filepath\n"
-    fi
-  else
-    if [ "$stop_creations" != true ]; then
-      printf "Creating new file: $ppt_filepath\n"
-    fi
-  fi
-
-  # Copy the template to create/overwrite macro file to be used
-  local copy="cp $libre_office_macro_template_filepath $libre_office_macro_filepath"
-  eval $copy
-
-  # Write filepath of SVG and PPT to macro for Libre Office to read
-  local svg_sed="sed -i '' \"s~SVG_FILEPATH~$svg_filepath~\" $libre_office_macro_filepath"
-  if [ "$debug" == true ]; then
-    echo_var svg_sed
-  fi
-
-  if [ "$stop_creations" != true ]; then
-    eval $svg_sed
-  fi
-
-  local ppt_sed="sed -i '' \"s~PPT_FILEPATH~$ppt_filepath~\" $libre_office_macro_filepath"
-  if [ "$debug" == true ]; then
-    echo_var ppt_sed
-  fi
-
-  if [ "$stop_creations" != true ]; then
-    eval $ppt_sed
-  fi
-
-  # Launch the template PPT with Libre Office and kick off macro
-  local libre_office_cmd="/Applications/LibreOffice.app/Contents/MacOS/soffice --invisible --headless $template_ppt_filepath \"vnd.sun.star.script:Standard.$libre_office_macro.Main?language=Basic&location=application\""
-
-  if [ "$debug" == true ]; then
-    echo_var libre_office_cmd
-  fi
-
-  if [ "$stop_creations" != true ]; then
-    eval $libre_office_cmd
-  fi
+  launch_libre_office_macro
 
   # Launch the new PPT file if where_to_open is defined
   if [ ! -z $where_to_open ]; then
-    local open_cmd="open -a $where_to_open $ppt_filepath"
-
-    if [ "$debug" == true ]; then
-      echo_var open_cmd
-    fi
-
-    if [ "$stop_creations" != true ]; then
-      eval $open_cmd
-    fi
+    open_ppt
   fi
 
-  if [ "$stop_creations" != true ]; then
+  if [ "$quiet" != true ]; then
     echo_success "File created: $ppt_filepath"
   fi
 }
 
-reset_preferences() {
+fetch_remote_preferences() {
   local description="application preferences"
 
   local remote_url="https://raw.githubusercontent.com/SVGtoPPT/svgtoppt/$version/src/svgtoppt-preferences"
-  local preferences_curl="curl -L $remote_url > $application_preferences_file_filepath"
+  local preferences_curl="$curl -L $remote_url > $application_preferences_file_filepath"
 
   if [ "$debug" == true ]; then
     echo_var remote_url
@@ -276,30 +373,43 @@ reset_preferences() {
 
   if [ "$stop_creations" != true ]; then
     eval $preferences_curl
-    local exit_code=$?
+  fi
+  local exit_code=$?
 
-    # echo_breakpoint exit_code "$description" "reset" 1 0
+  # echo_breakpoint exit_code "$description" "reset" 1 0
 
-    if [[ $exit_code -ne 0 ]]; then
-      echo_failed "reset $description"
-    fi
+  if [[ $exit_code -ne 0 ]]; then
+    echo_failed "reset $description"
+    exit 1
+  fi
+}
 
-    # Add output_directory and template PPT filepath to preferences file
-    printf "output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath" | cat - $current_filepath >temp && mv temp $current_filepath
-    local exit_code=$?
+update_application_preferences_file() {
+  # Add output_directory and template PPT filepath to preferences file
+  local add_variables="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
-    # echo_breakpoint exit_code "$description" "update" 1 0
-
-    if [[ $exit_code -ne 0 ]]; then
-      echo_failed "update $description"
-    fi
+  if [ "$debug" == true ]; then
+    echo_var add_variables
   fi
 
-  echo_success "Preferences reset"
+  if [ "$stop_creations" != true ]; then
+    eval $add_variables
+  fi
+  local exit_code=$?
+
+  # echo_breakpoint exit_code "$description" "update" 1 0
+
+  if [[ $exit_code -ne 0 ]]; then
+    echo_failed "update $description"
+    exit 1
+  elif [ "$quiet" != true ]; then
+    echo_success "Preferences reset"
+  fi
+
   exit
 }
 
-update_preferences() {
+update_preferences_from_input() {
   local description="application preferences"
 
   echo "output_directory=$output_directory
@@ -353,57 +463,80 @@ whichapp() {
   fi
 }
 
-description="Libre Office"
-IFS=' ' read -r brew_path string <<<"$(brew info libreoffice | sed -n '3p')"
-libre_office_location=$(whichapp "LibreOffice" || printf $brew_path)
+validate_libre_office_installed() {
+  local description="Libre Office"
 
-if [ -z "$libre_office_location" ]; then
-  echo_failed "find $description; please ensure Libre Office is installed"
-  exit 1
-fi
+  IFS=' ' read -r brew_path string <<<"$(brew info libreoffice | sed -n '3p')"
+  libre_office_location=$(whichapp "LibreOffice" || printf $brew_path)
 
-description="application config file"
-source $application_config_file_filepath
-exit_code=$?
+  if [ -z "$libre_office_location" ]; then
+    echo_failed "find $description; please ensure Libre Office is installed"
+    exit 1
+  fi
+}
 
-# echo_breakpoint exit_code "$description" "found" 1 0
+validate_application_config_file_exists() {
+  local description="application config file"
 
-if [[ $exit_code -ne 0 ]]; then
-  echo_failed "find $description: $application_config_file_filepath"
-  exit 1
-fi
+  source $application_config_file_filepath
+  exit_code=$?
 
-description="application preferences file"
-source $application_preferences_file_filepath
-exit_code=$?
+  # echo_breakpoint exit_code "$description" "found" 1 0
 
-# echo_breakpoint exit_code "$description" "found" 1 0
+  if [[ $exit_code -ne 0 ]]; then
+    echo_failed "find $description: $application_config_file_filepath"
+    exit 1
+  fi
+}
 
-if [[ $exit_code -ne 0 ]]; then
-  echo_failed "find $description"
-  exit 1
-fi
+validate_application_preferences_file_exists() {
+  local description="application preferences file"
 
-description="Libre Office macro template"
+  source $application_preferences_file_filepath
+  exit_code=$?
 
-if test -f "$libre_office_macro_template_filepath"; then
-  found=0
-else
-  found=1
-fi
+  # echo_breakpoint exit_code "$description" "found" 1 0
 
-# echo_breakpoint found "$description" "found" 1 0
+  if [[ $exit_code -ne 0 ]]; then
+    echo_failed "find $description"
+    exit 1
+  fi
+}
 
-if [[ $found -ne 0 ]]; then
-  echo_failed "find $description: $libre_office_macro_template_filepath"
-  exit 1
-fi
+validate_libre_office_macro_template_exists() {
+  local description="Libre Office macro template"
+
+  if test -f "$libre_office_macro_template_filepath"; then
+    local found=0
+  else
+    local found=1
+  fi
+  # echo_breakpoint found "$description" "found" 1 0
+
+  if [[ $found -ne 0 ]]; then
+    echo_failed "find $description: $libre_office_macro_template_filepath"
+    exit 1
+  fi
+}
+
+validate_libre_office_installed
+validate_application_config_file_exists
+validate_application_preferences_file_exists
+validate_libre_office_macro_template_exists
 
 # First parameter should be SVG file if no flags are passed
 first_parameter=$1
 
+if [ "$first_parameter" == "check_install" ]; then
+  exit 0
+elif [ "$first_parameter" == "reset_pref" ]; then
+  fetch_remote_preferences
+  update_application_preferences_file
+  exit 0
+fi
+
 # Check for flags overwriting defaults
-while getopts "f:i:o:p:t:w:dhsvx" option; do
+while getopts "f:i:o:p:t:w:dhqsvx" option; do
   case "${option}" in
     f) force_ppt=${OPTARG} ;;
     i) input_svg=${OPTARG} ;;
@@ -413,6 +546,7 @@ while getopts "f:i:o:p:t:w:dhsvx" option; do
     w) where_to_open=${OPTARG} ;;
     d) debug=true ;;
     h) help=true ;;
+    q) quiet=true ;;
     s) save_preferences=true ;;
     v) print_version=true ;;
     x) stop_creations=true ;;
@@ -425,13 +559,9 @@ if [ "$help" == true ]; then
 elif [ "$print_version" == true ]; then
   echo "$application_name $version"
   exit
-elif [ "$first_parameter" == "reset_pref" ]; then
-  reset_preferences
-elif [ "$first_parameter" == "check_install" ]; then
-  exit 0
 else
   if [ "$save_preferences" == true ]; then
-    update_preferences
+    update_preferences_from_input
   fi
 
   main

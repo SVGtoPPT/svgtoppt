@@ -2,3 +2,4 @@ input_svg=
 ppt_name=
 force_ppt=false
 where_to_open=keynote
+quiet=false
