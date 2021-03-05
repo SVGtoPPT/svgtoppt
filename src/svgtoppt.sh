@@ -105,6 +105,7 @@ echo_breakpoint() {
 }
 
 # Basic commands
+cat=$(find_path cat)
 cp=$(find_path cp)
 curl=$(find_path curl)
 mv=$(find_path mv)
@@ -150,11 +151,11 @@ main() {
 
     # Validate where_to_open for valid option
     case $where_to_open in
-      none)    where_to_open= ;;
+      none) where_to_open= ;;
       keynote) where_to_open=Keynote ;;
-      power)   where_to_open="Microsoft PowerPoint" ;;
-      libre)   where_to_open=LibreOffice ;;
-      oo)      where_to_open=OpenOffice ;;
+      power) where_to_open="Microsoft PowerPoint" ;;
+      libre) where_to_open=LibreOffice ;;
+      oo) where_to_open=OpenOffice ;;
       *)
         echo_error "Input flag where_to_open (-w) should only be set to: none, keynote, power, libre, oo"
         exit 2
@@ -192,6 +193,7 @@ main() {
   # Copies the template to create/overwrite macro file to be used
   create_macro_from_template() {
     local description="Libre Office macro template"
+
     local copy_file="$cp $libre_office_macro_template_filepath $libre_office_macro_filepath"
 
     if [ "$debug" == true ]; then
@@ -215,6 +217,8 @@ main() {
 
   # Write filepath of SVG to macro for Libre Office to read
   update_macro_with_svg() {
+    local description="Libre Office macro"
+
     local svg_sed="sed -i '' \"s~SVG_FILEPATH~$svg_filepath~\" $libre_office_macro_filepath"
     if [ "$debug" == true ]; then
       echo_var svg_sed
@@ -237,7 +241,9 @@ main() {
 
   # Write filepath of PPT to macro for Libre Office to read
   update_macro_with_ppt() {
-    local ppt_sed="sed -i '' \"s~PPT_FILEPATH~$ppt_filepath~\" $libre_office_macro_filepath"
+    local description="Libre Office macro"
+
+    local ppt_sed="$sed -i '' \"s~PPT_FILEPATH~$ppt_filepath~\" $libre_office_macro_filepath"
     if [ "$debug" == true ]; then
       echo_var ppt_sed
     fi
@@ -360,6 +366,7 @@ main() {
   fi
 }
 
+# Fetches the application preferences by version from GitHub
 fetch_remote_preferences() {
   local description="application preferences"
 
@@ -384,9 +391,11 @@ fetch_remote_preferences() {
   fi
 }
 
+# Add output_directory and template PPT filepath to preferences file
 update_application_preferences_file() {
-  # Add output_directory and template PPT filepath to preferences file
-  local add_variables="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
+  local description="application preferences file"
+
+  local add_variables="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
   if [ "$debug" == true ]; then
     echo_var add_variables
@@ -409,6 +418,7 @@ update_application_preferences_file() {
   exit
 }
 
+# Overwrite the application preferences file based on current variables
 update_preferences_from_input() {
   local description="application preferences"
 
