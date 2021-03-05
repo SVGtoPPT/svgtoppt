@@ -1,5 +1,5 @@
 # APPLICATION CONFIG VALUES
-version=1.0.0-alpha42
+version=1.0.0-beta1
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
