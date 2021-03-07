@@ -63,12 +63,17 @@ echo_bold() {
   tput sgr0
 }
 
+capitalize() {
+  local input=$1
+  echo $(tr a-z A-Z <<< ${input:0:1})${input:1}
+}
+
 echo_success() {
-  echo $green"$checkmark ${1^} successfully$txtrst"
+  echo $green"$checkmark $(capitalize "$1") successfully$txtrst"
 }
 
 echo_already_exists() {
-  echo $yellow"$warn Warning: ${1^} already exists: $bldwht$2$txtrst"
+  echo $yellow"$warn Warning: $(capitalize "$1") already exists: $bldwht$2$txtrst"
 }
 
 echo_failed() {
@@ -102,6 +107,18 @@ echo_breakpoint() {
     "2") exit 1 ;;
   esac
   echo
+}
+
+find_path() {
+  path=$(
+    command -v $1 ||
+      command -v /bin/$1 ||
+      command -v /usr/bin/$1 ||
+      command -v /usr/local/sbin/$1 ||
+      command -v /usr/local/bin/$1 ||
+      command -v ~/bin/$1
+  )
+  printf "$path"
 }
 
 # Basic commands
@@ -185,16 +202,16 @@ main() {
       fi
     else
       if [ "$stop_creations" != true ] && [ "$quiet" != true ]; then
-        printf "Creating new file: $ppt_filepath\n"
+        echo "$svg Creating new file: $ppt_filepath"
       fi
     fi
   }
 
   # Copies the template to create/overwrite macro file to be used
   create_macro_from_template() {
-    local description="Libre Office macro template"
+    local description="libre Office macro template"
 
-    local copy_file="$cp $libre_office_macro_template_filepath $libre_office_macro_filepath"
+    local copy_file="$cp \"$libre_office_macro_template_filepath\" \"$libre_office_macro_filepath\""
 
     if [ "$debug" == true ]; then
       echo_var copy_file
@@ -219,7 +236,7 @@ main() {
   update_macro_with_svg() {
     local description="Libre Office macro"
 
-    local svg_sed="sed -i '' \"s~SVG_FILEPATH~$svg_filepath~\" $libre_office_macro_filepath"
+    local svg_sed="$sed -i '' \"s~SVG_FILEPATH~$svg_filepath~\" \"$libre_office_macro_filepath\""
     if [ "$debug" == true ]; then
       echo_var svg_sed
     fi
@@ -243,7 +260,7 @@ main() {
   update_macro_with_ppt() {
     local description="Libre Office macro"
 
-    local ppt_sed="$sed -i '' \"s~PPT_FILEPATH~$ppt_filepath~\" $libre_office_macro_filepath"
+    local ppt_sed="$sed -i '' \"s~PPT_FILEPATH~$ppt_filepath~\" \"$libre_office_macro_filepath\""
     if [ "$debug" == true ]; then
       echo_var ppt_sed
     fi
@@ -346,7 +363,7 @@ main() {
   if [ -z $ppt_name ]; then
     ppt_name=$svg_name
   fi
-  local ppt_filepath=$output_directory/$ppt_name$ppt_file_ext
+  ppt_filepath=$output_directory/$ppt_name$ppt_file_ext
 
   determine_ppt_name
 
@@ -362,7 +379,7 @@ main() {
   fi
 
   if [ "$quiet" != true ]; then
-    echo_success "File created: $ppt_filepath"
+    echo_success "File created"
   fi
 }
 
@@ -395,7 +412,7 @@ fetch_remote_preferences() {
 update_application_preferences_file() {
   local description="application preferences file"
 
-  local add_variables="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
+  local add_variables="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\n\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
   if [ "$debug" == true ]; then
     echo_var add_variables
@@ -533,6 +550,9 @@ validate_libre_office_installed
 validate_application_config_file_exists
 validate_application_preferences_file_exists
 validate_libre_office_macro_template_exists
+
+source $application_config_file_filepath
+source $application_preferences_file_filepath
 
 # First parameter should be SVG file if no flags are passed
 first_parameter=$1

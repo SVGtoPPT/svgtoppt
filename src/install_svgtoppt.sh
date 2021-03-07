@@ -73,12 +73,17 @@ echo_bold() {
   tput sgr0
 }
 
+capitalize() {
+  local input=$1
+  echo $(tr a-z A-Z <<< ${input:0:1})${input:1}
+}
+
 echo_success() {
-  echo $green"$checkmark ${1^} successfully$txtrst"
+  echo $green"$checkmark $(capitalize "$1") successfully$txtrst"
 }
 
 echo_already_exists() {
-  echo $yellow"$warn Warning: ${1^} already exists: $bldwht$2$txtrst"
+  echo $yellow"$warn Warning: $(capitalize "$1") already exists: $bldwht$2$txtrst"
 }
 
 echo_already_installed() {
@@ -747,7 +752,7 @@ install_basic() (
     local current_filepath="$application_directory/$application_preferences_file"
 
     # Add output_directory and template PPT filepath to preferences file
-    local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
+    local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\n\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
     if [ "$debug" == true ]; then
       echo_var add_preferences
@@ -857,7 +862,7 @@ install_basic() (
   # Start
 
   if [ "$1" == true ] && [ "$quiet" != true ]; then
-    echo "$svg Starting basic installation of SVG to PPT"
+    echo "$svg Starting basic installation of SVGtoPPT"
     echo
   fi
 
@@ -891,7 +896,7 @@ install_basic() (
 
   if [ "$quiet" != true ]; then
     echo
-    echo_success $txtbld"SVG to PPT installed"
+    echo_success $txtbld"SVGtoPPT installed"
   fi
 )
 
@@ -954,7 +959,7 @@ install_complete() (
   }
 
   if [ "$quiet" != true ]; then
-    echo_bold "$svg Starting complete installation of SVG to PPT"
+    echo_bold "$svg Starting complete installation of SVGtoPPT"
     echo
   fi
 
@@ -986,13 +991,13 @@ install_complete() (
 install_type=$1
 
 # Check for flags overwriting defaults
-while getopts "a:i:dqsx" option; do
+while getopts "a:i:dqrx" option; do
   case "${option}" in
     a) application_directory=${OPTARG} ;;
     i) install_type=${OPTARG} ;;
+    d) debug=true ;;
     q) quiet=true ;;
     r) reinstall=true ;;
-    d) debug=true ;;
     x) stop_creations=true ;;
   esac
 done
