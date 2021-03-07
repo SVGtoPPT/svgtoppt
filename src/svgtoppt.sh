@@ -356,7 +356,7 @@ main() {
   validate_inputs
 
   # Set SVG flag-dependent defaults
-  local svg_name_with_ext=${input_svg##*/}
+  local svg_name_with_ext=${svg_filepath##*/}
   IFS='.' read -r svg_name string <<<"$svg_name_with_ext"
 
   # Set PPT flag-dependent defaults
