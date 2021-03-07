@@ -585,6 +585,22 @@ done
 
 if [ "$help" == true ]; then
   echo $bldwht"Usage:$txtrst $application_name [PATH_TO_SVG_FILE]"
+  echo
+  bldwhtund=$txtund$bldwht
+  echo $bldwhtund"Flag$txtrst  "$bldwhtund"Name$txtrst              "$bldwhtund"Description"$txtrst
+  echo "-q    quiet             Quiet mode to prevent output"
+  echo "-i    input_svg         Filepath of the SVG file to be converted"
+  echo "-t    template_ppt      Filepath of the template PPT"
+  echo "-o    output_directory  Filepath of the directory where PPT files are output"
+  echo "-p    ppt_name          The name of the PPT file that is output"
+  echo "-f    force_ppt         Force use the ppt_name (introduces risk of overwriting a PPT file)"
+  echo "-w    where_to_open     Where the PPT file is opened in after it's created"
+  echo
+  echo $bldwht"Example:$txtrst svgtoppt -i ~/Desktop/logo.svg -t ~/Documents/blake_template.ppt -o ~/Desktop -p amazing_logo -f true -w none -q"
+  echo
+  echo $bldwht"More documentation:$txtrst https://svgtoppt.com/cli"
+  echo $bldwht"Source:$txtrst https://github.com/SVGtoPPT/svgtoppt"
+  echo $bldwht"Support:$txtrst https://svgtoppt.com/support"
   exit
 elif [ "$print_version" == true ]; then
   echo "$application_name $version"
