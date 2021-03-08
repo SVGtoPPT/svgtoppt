@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # APPLICATION CONFIG VALUES
 version=1.0.0-beta1
 application_name=svgtoppt
@@ -144,6 +146,7 @@ find=$(find_path find)
 mkdir=$(find_path mkdir)
 mv=$(find_path mv)
 rm=$(find_path rm)
+sed=$(find_path sed)
 unzip=$(find_path unzip)
 
 # Checks whether an application is installed
@@ -194,7 +197,7 @@ check_homebrew_installed() {
     local found=1
 
     if [ "$quiet" != true ]; then
-      echo_already_installed "$description" $homebrew_location
+      echo_already_installed "$description" $brew
     fi
   fi
 
@@ -208,28 +211,44 @@ check_homebrew_installed() {
 check_libre_office_installed() {
   local description="Libre Office"
 
-  check_homebrew_installed
-
-  if [[ $? -ne 0 ]]; then
-    local brew_command="$brew info libreoffice | sed -n '3p'"
-
-    if [ "$debug" == true ]; then
-      echo_var brew_command
-    fi
-
-    IFS=' ' read -r brew_libre_office_location string <<<$(eval $brew_command)
-  else
-    $brew_libre_office_location=false
-  fi
-
-  libre_office_location=$(whichapp "LibreOffice" || printf $brew_libre_office_location)
+  libre_office_location=$(whichapp "LibreOffice")
 
   if [ "$debug" == true ]; then
     echo_var libre_office_location
   fi
 
   if [[ -z "$libre_office_location" ]]; then
-    local found=0
+    check_homebrew_installed
+
+    if [[ $? -ne 0 ]]; then
+      local brew_command="$brew info libreoffice | $sed -n '3p'"
+
+      if [ "$debug" == true ]; then
+        echo_var brew_command
+      fi
+
+      IFS=' ' read -r brew_libre_office_location string <<<$(eval $brew_command)
+
+      if [[ $brew_libre_office_location == *"Not"* ]]; then
+        brew_libre_office_location=""
+      fi
+    else
+      brew_libre_office_location=""
+    fi
+
+    if [ "$debug" == true ]; then
+      echo_var brew_libre_office_location
+    fi
+
+    if [[ -z "$brew_libre_office_location" ]]; then
+      local found=0
+    else
+      local found=1
+
+      if [ "$quiet" != true ]; then
+        echo_already_installed "$description" $brew_libre_office_location
+      fi
+    fi
   else
     local found=1
 

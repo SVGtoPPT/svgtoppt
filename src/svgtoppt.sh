@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Uncomment for intense debugging
 # before=$(set -o posix; set | sort);
 
