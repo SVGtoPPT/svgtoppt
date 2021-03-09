@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # APPLICATION CONFIG VALUES
-version=1.0.0-beta1
+version=1.0.0-beta2
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
-application_preferences_file=$application_name-preferences
-application_preferences_file_filepath=~/.$application_preferences_file
+application_defaults_file=$application_name-defaults
+application_defaults_file_filepath=~/.$application_defaults_file
 application_zip_file=$PWD/$application_name.zip
 
 # BASH SCRIPT CONFIG VALUES
@@ -764,21 +764,21 @@ install_basic() (
     fi
   }
 
-  # Add values to the application preferences file
-  update_application_preferences_file() {
-    local description="application preferences file"
+  # Add values to the application defaults file
+  update_application_defaults_file() {
+    local description="application defaults file"
 
-    local current_filepath="$application_directory/$application_preferences_file"
+    local current_filepath="$application_directory/$application_defaults_file"
 
-    # Add output_directory and template PPT filepath to preferences file
-    local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\n\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
+    # Add output_directory and template PPT filepath to defaults file
+    local add_defaults="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\n\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
     if [ "$debug" == true ]; then
-      echo_var add_preferences
+      echo_var add_defaults
     fi
 
     if [ "$stop_creations" != true ]; then
-      eval $add_preferences
+      eval $add_defaults
     fi
     local exit_code=$?
 
@@ -793,11 +793,11 @@ install_basic() (
   }
 
   # Moves the application config file into the home directory
-  move_application_preferences_file() {
-    local description="application preferences file"
+  move_application_defaults_file() {
+    local description="application defaults file"
 
-    local source="$application_directory/$application_preferences_file"
-    local target=$application_preferences_file_filepath
+    local source="$application_directory/$application_defaults_file"
+    local target=$application_defaults_file_filepath
     local move="$mv \"$source\" \"$target\""
 
     if [ "$debug" == true ]; then
@@ -907,8 +907,8 @@ install_basic() (
   update_application_config_file
   move_application_config_file
 
-  update_application_preferences_file
-  move_application_preferences_file
+  update_application_defaults_file
+  move_application_defaults_file
 
   remove_extra_files
   remove_dot_files
