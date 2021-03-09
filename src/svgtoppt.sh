@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Uncomment for intense debugging
 # before=$(set -o posix; set | sort);
 
@@ -5,12 +7,14 @@
 application_name=svgtoppt
 application_config_file=.$application_name
 application_config_file_filepath=~/$application_config_file
-application_preferences_file=.$application_name-preferences
-application_preferences_file_filepath=~/$application_preferences_file
+application_defaults_file=.$application_name-defaults
+application_defaults_file_filepath=~/$application_defaults_file
 
 # HELPFUL STRINGS
-svg_file_ext=.svg
-ppt_file_ext=.ppt
+svg_file_ext='.svg'
+ppt_file_ext='.ppt'
+file_uri_prefix='file://'
+quote_string='\&quot;'
 
 # TEXT FORMATS
 txtund=$(tput sgr 0 1) # Underline
@@ -46,16 +50,16 @@ print_text_options() {
 # print_text_options
 
 # EMOJIS
-brew="🍺"
-checkmark="✅"
-exclamation="❗️"
-libre="📄"
-octo="🐙"
-svg="🖌 "
-swirl="🌀"
-trash="🗑 "
-warn="⚠️ "
-x_mark="❌"
+brew='🍺'
+checkmark='✅'
+exclamation='❗️'
+libre='📄'
+octo='🐙'
+svg='🖌 '
+swirl='🌀'
+trash='🗑 '
+warn='⚠️ '
+x_mark='❌'
 
 # HELPER FUNCTIONS
 echo_bold() {
@@ -130,26 +134,32 @@ sed=$(find_path sed)
 
 main() {
   validate_inputs() {
-    # Check if SVG file exists
-    if test -f $first_parameter && [ ! -z $first_parameter ]; then
+    # Check if SVG file exists or if it's a directory
+    if [ ! -z "$first_parameter" ] && test -f $first_parameter; then
       svg_filepath=$first_parameter
-    elif test -f $input_svg; then
-      svg_filepath=$input_svg
-    elif test -f $PWD/$input_svg; then
-      svg_filepath=$PWD/$input_svg
+    elif test -f $input; then
+      svg_filepath=$input
+    elif test -f $PWD/$input; then
+      svg_filepath=$PWD/$input
+    elif [ ! -z "$first_parameter" ] && [ -d $first_parameter ]; then
+      svg_directory=$first_parameter
+    elif [ -d $input ]; then
+      svg_directory=$input
+    elif [ -d $PWD/$input ]; then
+      svg_directory=$PWD/$input
     else
-      echo_failed "find input SVG file: $input_svg"
+      echo_failed "find input file/directory: $input"
       exit 2
     fi
 
     # Check if SVG extension is present
-    if [[ "$svg_filepath" != *"$svg_file_ext" ]]; then
+    if [[ ! -z "$svg_filepath" ]] && [[ "$svg_filepath" != *"$svg_file_ext" ]]; then
       echo_failed "find '$svg_file_ext' at the end of the input file: $bldwht$svg_filepath$txtrst"
       exit 2
     fi
 
     # If template PPT passed in, check if it exists
-    if [ ! -z $template_ppt ]; then
+    if [ ! -z "$template_ppt" ]; then
       if test -f $PWD/$template_ppt; then
         template_ppt_filepath=$PWD/$template_ppt
       elif test -f $template_ppt; then
@@ -178,13 +188,65 @@ main() {
         exit 2
         ;;
     esac
+
+    if [[ ! -z "$svg_filepath" ]]; then
+      # Set SVG flag-dependent defaults
+      local svg_name_with_ext=${svg_filepath##*/}
+      IFS='.' read -r svg_name string <<<"$svg_name_with_ext"
+
+      # Set PPT flag-dependent defaults
+      if [ -z "$ppt_name" ]; then
+        ppt_name=$svg_name
+      fi
+      ppt_filepath=$output_directory/$ppt_name$ppt_file_ext
+    elif [[ ! -z "$svg_directory" ]]; then
+      # echo_var svg_directory
+
+      local first=true
+      for i in "$svg_directory"/*
+      do
+        # echo $i
+        if [[ "$i" == *"$svg_file_ext" ]]; then
+          if [ "$first" == true ]; then
+            first=false
+          else
+            svg_filepaths="$svg_filepaths, "
+          fi
+
+          svg_filepaths="$svg_filepaths$quote_string$file_uri_prefix$i$quote_string"
+        # else
+        #   echo "Not an SVG: $i"
+        fi
+      done
+    fi
+
+    echo_var svg_filepaths
   }
 
   # Figures out the name of the PPT file based on $force_ppt and existing PPT files
   determine_ppt_name() {
+    if [[ ! -z "$svg_filepath" ]]; then
+      local svg_name_with_ext=${svg_filepath##*/}
+      IFS='.' read -r svg_name string <<<"$svg_name_with_ext"
+
+      # Set PPT flag-dependent defaults
+      if [ -z "$ppt_name" ]; then
+        ppt_name=$svg_name
+      fi
+    elif [[ ! -z "$svg_directory" ]]; then
+      local directory_name=${svg_directory##*/}
+
+      # Set PPT flag-dependent defaults
+      if [ -z "$ppt_name" ]; then
+        ppt_name=$directory_name
+      fi
+    fi
+
+    ppt_filepath=$output_directory/$ppt_name$ppt_file_ext
+
     if [ "$force_ppt" != true ] && [ -f $ppt_filepath ]; then
       while [ -f $ppt_filepath ]; do
-        if [ -z $ppt_name_suffix ]; then
+        if [ -z "$ppt_name_suffix" ]; then
           ppt_name_suffix=-1
         else
           ppt_name_suffix=$((ppt_name_suffix - 1))
@@ -217,9 +279,9 @@ main() {
       echo_var copy_file
     fi
 
-    if [ "$stop_creations" != true ]; then
+    # if [ "$stop_creations" != true ]; then
       eval $copy_file
-    fi
+    # fi
     local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "copied" 1 0
@@ -236,7 +298,11 @@ main() {
   update_macro_with_svg() {
     local description="Libre Office macro"
 
-    local svg_sed="$sed -i '' \"s~SVG_FILEPATH~$svg_filepath~\" \"$libre_office_macro_filepath\""
+    if [ -z "$svg_filepaths" ]; then
+      svg_filepaths=$svg_filepath
+    fi
+
+    local svg_sed="$sed -i '' \"s|SVG_FILEPATHS|$svg_filepaths|\" \"$libre_office_macro_filepath\""
     if [ "$debug" == true ]; then
       echo_var svg_sed
     fi
@@ -337,7 +403,7 @@ main() {
     echo_var output_directory
 
     printf "\n# SVG\n"
-    echo_var input_svg
+    echo_var input
 
     printf "\n# PPT\n"
     echo_var ppt_name
@@ -354,17 +420,6 @@ main() {
   fi
 
   validate_inputs
-
-  # Set SVG flag-dependent defaults
-  local svg_name_with_ext=${svg_filepath##*/}
-  IFS='.' read -r svg_name string <<<"$svg_name_with_ext"
-
-  # Set PPT flag-dependent defaults
-  if [ -z $ppt_name ]; then
-    ppt_name=$svg_name
-  fi
-  ppt_filepath=$output_directory/$ppt_name$ppt_file_ext
-
   determine_ppt_name
 
   create_macro_from_template
@@ -374,7 +429,7 @@ main() {
   launch_libre_office_macro
 
   # Launch the new PPT file if where_to_open is defined
-  if [ ! -z $where_to_open ]; then
+  if [ ! -z "$where_to_open" ]; then
     open_ppt
   fi
 
@@ -383,20 +438,20 @@ main() {
   fi
 }
 
-# Fetches the application preferences by version from GitHub
-fetch_remote_preferences() {
-  local description="application preferences"
+# Fetches the application defaults by version from GitHub
+fetch_remote_defaults() {
+  local description="application defaults"
 
-  local remote_url="https://raw.githubusercontent.com/SVGtoPPT/svgtoppt/$version/src/svgtoppt-preferences"
-  local preferences_curl="$curl -L $remote_url > $application_preferences_file_filepath"
+  local remote_url="https://raw.githubusercontent.com/SVGtoPPT/svgtoppt/$version/src/svgtoppt-defaults"
+  local defaults_curl="$curl -L $remote_url > $application_defaults_file_filepath"
 
   if [ "$debug" == true ]; then
     echo_var remote_url
-    echo_var preferences_curl
+    echo_var defaults_curl
   fi
 
   if [ "$stop_creations" != true ]; then
-    eval $preferences_curl
+    eval $defaults_curl
   fi
   local exit_code=$?
 
@@ -408,9 +463,9 @@ fetch_remote_preferences() {
   fi
 }
 
-# Add output_directory and template PPT filepath to preferences file
-update_application_preferences_file() {
-  local description="application preferences file"
+# Add output_directory and template PPT filepath to defaults file
+update_application_defaults_file() {
+  local description="application defaults file"
 
   local add_variables="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\n\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
@@ -429,22 +484,22 @@ update_application_preferences_file() {
     echo_failed "update $description"
     exit 1
   elif [ "$quiet" != true ]; then
-    echo_success "Preferences reset"
+    echo_success "Defaults reset"
   fi
 
   exit
 }
 
-# Overwrite the application preferences file based on current variables
-update_preferences_from_input() {
-  local description="application preferences"
+# Overwrite the application defaults file based on current variables
+update_defaults_from_input() {
+  local description="application defaults"
 
   echo "output_directory=$output_directory
 template_ppt_filepath=$template_ppt_filepath
-input_svg=$input_svg
+input=$input
 ppt_name=$ppt_name
 force_ppt=$force_ppt
-where_to_open=$where_to_open" >$application_preferences_file_filepath
+where_to_open=$where_to_open" >$application_defaults_file_filepath
 
   local exit_code=$?
 
@@ -454,7 +509,7 @@ where_to_open=$where_to_open" >$application_preferences_file_filepath
     echo_failed "update $description"
   fi
 
-  echo_success "Preferences updated"
+  echo_success "Defaults updated"
 }
 
 # Checks whether an application is installed
@@ -516,10 +571,10 @@ validate_application_config_file_exists() {
   fi
 }
 
-validate_application_preferences_file_exists() {
-  local description="application preferences file"
+validate_application_defaults_file_exists() {
+  local description="application defaults file"
 
-  source $application_preferences_file_filepath
+  source $application_defaults_file_filepath
   exit_code=$?
 
   # echo_breakpoint exit_code "$description" "found" 1 0
@@ -548,66 +603,104 @@ validate_libre_office_macro_template_exists() {
 
 validate_libre_office_installed
 validate_application_config_file_exists
-validate_application_preferences_file_exists
+validate_application_defaults_file_exists
 validate_libre_office_macro_template_exists
 
 source $application_config_file_filepath
-source $application_preferences_file_filepath
+source $application_defaults_file_filepath
 
 # First parameter should be SVG file if no flags are passed
 first_parameter=$1
 
 if [ "$first_parameter" == "check_install" ]; then
   exit 0
-elif [ "$first_parameter" == "reset_pref" ]; then
-  fetch_remote_preferences
-  update_application_preferences_file
+elif [ "$first_parameter" == "reset_def" ]; then
+  fetch_remote_defaults
+  update_application_defaults_file
   exit 0
+elif [[ $first_parameter = --* ]]; then
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --debug) debug=true ;;
+      --help) help=true ;;
+      --save_def) save_def=true ;;
+      --quiet) quiet=true ;;
+      --version) print_version=true ;;
+      --stop_creations) stop_creations=true ;;
+      --force_ppt=*) force_ppt="${1#*=}" ;;
+      --input=*) input="${1#*=}" ;;
+      --output_directory=*) output_directory=${OPTARG} ;;
+      --ppt_name=*) ppt_name=${OPTARG} ;;
+      --template_ppt=*) template_ppt=${OPTARG} ;;
+      --where_to_open=*) where_to_open=${OPTARG} ;;
+    esac
+    shift
+  done
+elif [[ $first_parameter = -* ]]; then
+  # Check for flags overwriting defaults
+  while getopts "f:i:o:p:t:w:dhqsvx" option; do
+    case "${option}" in
+      f) force_ppt=${OPTARG} ;;
+      i) input=${OPTARG} ;;
+      o) output_directory=${OPTARG} ;;
+      p) ppt_name=${OPTARG} ;;
+      t) template_ppt=${OPTARG} ;;
+      w) where_to_open=${OPTARG} ;;
+      d) debug=true ;;
+      h) help=true ;;
+      q) quiet=true ;;
+      s) save_def=true ;;
+      v) print_version=true ;;
+      x) stop_creations=true ;;
+    esac
+  done
 fi
 
-# Check for flags overwriting defaults
-while getopts "f:i:o:p:t:w:dhqsvx" option; do
-  case "${option}" in
-    f) force_ppt=${OPTARG} ;;
-    i) input_svg=${OPTARG} ;;
-    o) output_directory=${OPTARG} ;;
-    p) ppt_name=${OPTARG} ;;
-    t) template_ppt=${OPTARG} ;;
-    w) where_to_open=${OPTARG} ;;
-    d) debug=true ;;
-    h) help=true ;;
-    q) quiet=true ;;
-    s) save_preferences=true ;;
-    v) print_version=true ;;
-    x) stop_creations=true ;;
-  esac
-done
-
 if [ "$help" == true ]; then
-  echo $bldwht"Usage:$txtrst $application_name [PATH_TO_SVG_FILE]"
+  echo $bldwht"Standard Usage:$txtrst $application_name [PATH_TO_SVG_FILE]"
+  echo $bldwht"Custom Usage:$txtrst $application_name [FLAGS]"
   echo
   bldwhtund=$txtund$bldwht
-  echo $bldwhtund"Flag$txtrst  "$bldwhtund"Name$txtrst              "$bldwhtund"Description"$txtrst
-  echo "-q    quiet             Quiet mode to prevent output"
-  echo "-i    input_svg         Filepath of the SVG file to be converted"
-  echo "-t    template_ppt      Filepath of the template PPT"
-  echo "-o    output_directory  Filepath of the directory where PPT files are output"
-  echo "-p    ppt_name          The name of the PPT file that is output"
-  echo "-f    force_ppt         Force use the ppt_name (introduces risk of overwriting a PPT file)"
-  echo "-w    where_to_open     Where the PPT file is opened in after it's created"
+  echo $bldwhtund"Flags$txtrst                  "$bldwhtund"Name$txtrst              "$bldwhtund"Description"$txtrst
+  echo "-q --quiet             quiet             Quiet mode to prevent output"
+  echo "-i --input             input             Filepath of the SVG file or directory to be converted"
+  echo "-t --template_ppt      template_ppt      Filepath of the template PPT"
+  echo "-o --output_directory  output_directory  Filepath of the directory where PPT files are output"
+  echo "-p --ppt_name          ppt_name          The name of the PPT file that is output"
+  echo "-f --force_ppt         force_ppt         Force use the ppt_name (introduces risk of overwriting a PPT file)"
+  echo "-w --where_to_open     where_to_open     Where the PPT file is opened in after it's created"
+  echo "-s --save_def          save_def          Save the other flags on the current request as your defaults"
   echo
-  echo $bldwht"Example:$txtrst svgtoppt -i ~/Desktop/logo.svg -t ~/Documents/blake_template.ppt -o ~/Desktop -p amazing_logo -f true -w none -q"
+  echo $bldwht"Examples:$txtrst"
+  echo "  svgtoppt -i ~/Desktop/logo.svg -t ~/Documents/blake_template.ppt -o ~/Desktop -p amazing_logo -f true -w none -q"
+  echo "  svgtoppt --input=~/Desktop/logo.svg \\"
+  echo "           --template_ppt=~/Documents/blake_template.ppt \\"
+  echo "           --output_directory=~/Desktop \\"
+  echo "           --ppt_name=amazing_logo \\"
+  echo "           --force_ppt=true \\"
+  echo "           --where_to_open=none \\"
+  echo "           --quiet"
+  echo
+  echo $bldwht"Get Help:$txtrst $application_name -h"
+  echo "          $application_name --help"
+  echo $bldwht"View Version:$txtrst $application_name -v"
+  echo "              $application_name --version"
   echo
   echo $bldwht"More documentation:$txtrst https://svgtoppt.com/cli"
   echo $bldwht"Source:$txtrst https://github.com/SVGtoPPT/svgtoppt"
   echo $bldwht"Support:$txtrst https://svgtoppt.com/support"
   exit
 elif [ "$print_version" == true ]; then
+  if [ -z $version ]; then
+    echo_error "Version of svgtoppt not found; ensure application config file exists: $bldwht$application_config_file_filepath"
+    exit 1
+  fi
+
   echo "$application_name $version"
   exit
 else
-  if [ "$save_preferences" == true ]; then
-    update_preferences_from_input
+  if [ "$save_def" == true ]; then
+    update_defaults_from_input
   fi
 
   main
@@ -617,7 +710,7 @@ if [ "$debug" == true ]; then
   printf $bldcyn"\n~OUTPUT FOR DEBUGGING~\n\n"$txtrst
 
   printf $bldcyn"\n# INPUT\n"$txtrst
-  echo_var input_svg
+  echo_var input
   echo_var svg_name_with_ext
   echo_var svg_name
   echo_var svg_filepath
@@ -625,7 +718,6 @@ if [ "$debug" == true ]; then
   printf $bldcyn"\n# LIBRE OFFICE\n"$txtrst
   echo_var stop_creations
   echo_var application_config_file_filepath
-  echo_var libre_office_cmd
 
   printf $bldcyn"\n# OUTPUT\n"$txtrst
   echo_var output_directory
@@ -635,7 +727,6 @@ if [ "$debug" == true ]; then
   echo_var ppt_filepath
   echo_var force_ppt
   echo_var where_to_open
-  echo_var open_cmd
 
   # Uncomment for intense debugging
   # comm -13 <(printf %s "$before") <(set -o posix; set | sort | uniq)

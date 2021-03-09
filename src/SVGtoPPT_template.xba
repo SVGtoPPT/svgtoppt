@@ -3,18 +3,33 @@
 <script:module xmlns:script="http://openoffice.org/2000/script" script:name="SVGtoPPT" script:language="StarBasic" script:moduleType="normal">REM  *****  BASIC  *****
 
 Sub Main
-	dim svgFilePath as string, pptFileName as string
+	Dim svgFilePath as string, pptFileName as string
+	Dim svgArray As Variant
+	svgArray = Array(SVG_FILEPATHS)
 
-	svgFilePath = &quot;file://SVG_FILEPATH&quot;
-	pptFileName = &quot;file://PPT_FILEPATH&quot;
-
-	dim document as object
-	dim dispatcher as object
+	Dim document as object
+	Dim dispatcher as object
 
 	document = ThisComponent.CurrentController.Frame
 	dispatcher = createUnoService(&quot;com.sun.star.frame.DispatchHelper&quot;)
 
-	importAndFormatSVG(document, dispatcher, svgFilePath)
+	Dim first as Boolean
+	first = true
+
+	Dim emptyArgs(0) as new com.sun.star.beans.PropertyValue
+
+	For Each svgFilePath In svgArray
+		If first Then
+			first = false
+		Else
+			dispatcher.executeDispatch(document, &quot;.uno:InsertPage&quot;, &quot;&quot;, 0, emptyArgs)
+			dispatcher.executeDispatch(document, &quot;.uno:SelectAll&quot;, &quot;&quot;, 0, emptyArgs)
+			dispatcher.executeDispatch(document, &quot;.uno:Delete&quot;, &quot;&quot;, 0, emptyArgs)
+		End If
+		importAndFormatSVG(document, dispatcher, svgFilePath)
+	Next
+
+	pptFileName = &quot;file://PPT_FILEPATH&quot;
 	saveFileAsPPT(document, dispatcher, pptFileName)
 
 	closeAll()
@@ -22,7 +37,7 @@ End Sub
 
 &apos; Handles importing the SVG file as input
 Sub importandFormatSVG(document as object, dispatcher as object, svgFilePath as string)
-	dim imageArgs(3) as new com.sun.star.beans.PropertyValue
+	Dim imageArgs(3) as new com.sun.star.beans.PropertyValue
 	imageArgs(0).Name = &quot;FileName&quot;
 	imageArgs(0).Value = svgFilePath
 	imageArgs(1).Name = &quot;FilterName&quot;
@@ -43,7 +58,7 @@ End Sub
 
 &apos; Handles exporting the PPT file as output
 Sub saveFileAsPPT(document as object, dispatcher as object, pptFileName as string)
-	dim saveArgs(1) as new com.sun.star.beans.PropertyValue
+	Dim saveArgs(1) as new com.sun.star.beans.PropertyValue
 	saveArgs(0).Name = &quot;URL&quot;
 	saveArgs(0).Value = pptFileName
 	saveArgs(1).Name = &quot;FilterName&quot;

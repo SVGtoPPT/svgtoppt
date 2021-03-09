@@ -1,11 +1,13 @@
+#!/bin/bash
+
 # APPLICATION CONFIG VALUES
-version=1.0.0-beta1
+version=1.0.0-beta3
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
 application_config_file_filepath=~/.$application_config_file
-application_preferences_file=$application_name-preferences
-application_preferences_file_filepath=~/.$application_preferences_file
+application_defaults_file=$application_name-defaults
+application_defaults_file_filepath=~/.$application_defaults_file
 application_zip_file=$PWD/$application_name.zip
 
 # BASH SCRIPT CONFIG VALUES
@@ -113,7 +115,7 @@ echo_breakpoint() {
 
   echo_debug "$2 not $3" "$3"
   local input
-  read input
+  read -r input
 
   case $input in
     "0") eval "$var_name"="$4" ;;
@@ -144,6 +146,7 @@ find=$(find_path find)
 mkdir=$(find_path mkdir)
 mv=$(find_path mv)
 rm=$(find_path rm)
+sed=$(find_path sed)
 unzip=$(find_path unzip)
 
 # Checks whether an application is installed
@@ -194,7 +197,7 @@ check_homebrew_installed() {
     local found=1
 
     if [ "$quiet" != true ]; then
-      echo_already_installed "$description" $homebrew_location
+      echo_already_installed "$description" $brew
     fi
   fi
 
@@ -208,28 +211,44 @@ check_homebrew_installed() {
 check_libre_office_installed() {
   local description="Libre Office"
 
-  check_homebrew_installed
-
-  if [[ $? -ne 0 ]]; then
-    local brew_command="$brew info libreoffice | sed -n '3p'"
-
-    if [ "$debug" == true ]; then
-      echo_var brew_command
-    fi
-
-    IFS=' ' read -r brew_libre_office_location string <<<$(eval $brew_command)
-  else
-    $brew_libre_office_location=false
-  fi
-
-  libre_office_location=$(whichapp "LibreOffice" || printf $brew_libre_office_location)
+  libre_office_location=$(whichapp "LibreOffice")
 
   if [ "$debug" == true ]; then
     echo_var libre_office_location
   fi
 
   if [[ -z "$libre_office_location" ]]; then
-    local found=0
+    check_homebrew_installed
+
+    if [[ $? -ne 0 ]]; then
+      local brew_command="$brew info libreoffice | $sed -n '3p'"
+
+      if [ "$debug" == true ]; then
+        echo_var brew_command
+      fi
+
+      IFS=' ' read -r brew_libre_office_location string <<<$(eval $brew_command)
+
+      if [[ $brew_libre_office_location == *"Not"* ]]; then
+        brew_libre_office_location=""
+      fi
+    else
+      brew_libre_office_location=""
+    fi
+
+    if [ "$debug" == true ]; then
+      echo_var brew_libre_office_location
+    fi
+
+    if [[ -z "$brew_libre_office_location" ]]; then
+      local found=0
+    else
+      local found=1
+
+      if [ "$quiet" != true ]; then
+        echo_already_installed "$description" $brew_libre_office_location
+      fi
+    fi
   else
     local found=1
 
@@ -274,7 +293,7 @@ install_basic() (
         printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
 
         local input
-        read input
+        read -r input
 
         case $input in
           "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
@@ -334,7 +353,7 @@ install_basic() (
         printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
 
         local input
-        read input
+        read -r input
         case $input in
           "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
           "1") exit 1 ;;
@@ -381,7 +400,7 @@ install_basic() (
         printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
 
         local input
-        read input
+        read -r input
         case $input in
           "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
           "1") exit 1 ;;
@@ -745,21 +764,21 @@ install_basic() (
     fi
   }
 
-  # Add values to the application preferences file
-  update_application_preferences_file() {
-    local description="application preferences file"
+  # Add values to the application defaults file
+  update_application_defaults_file() {
+    local description="application defaults file"
 
-    local current_filepath="$application_directory/$application_preferences_file"
+    local current_filepath="$application_directory/$application_defaults_file"
 
-    # Add output_directory and template PPT filepath to preferences file
-    local add_preferences="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\n\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
+    # Add output_directory and template PPT filepath to defaults file
+    local add_defaults="printf \"output_directory=$output_directory\ntemplate_ppt_filepath=$template_ppt_filepath\n\" | $cat - $current_filepath >temp && $mv \"temp\" \"$current_filepath\""
 
     if [ "$debug" == true ]; then
-      echo_var add_preferences
+      echo_var add_defaults
     fi
 
     if [ "$stop_creations" != true ]; then
-      eval $add_preferences
+      eval $add_defaults
     fi
     local exit_code=$?
 
@@ -774,11 +793,11 @@ install_basic() (
   }
 
   # Moves the application config file into the home directory
-  move_application_preferences_file() {
-    local description="application preferences file"
+  move_application_defaults_file() {
+    local description="application defaults file"
 
-    local source="$application_directory/$application_preferences_file"
-    local target=$application_preferences_file_filepath
+    local source="$application_directory/$application_defaults_file"
+    local target=$application_defaults_file_filepath
     local move="$mv \"$source\" \"$target\""
 
     if [ "$debug" == true ]; then
@@ -888,8 +907,8 @@ install_basic() (
   update_application_config_file
   move_application_config_file
 
-  update_application_preferences_file
-  move_application_preferences_file
+  update_application_defaults_file
+  move_application_defaults_file
 
   remove_extra_files
   remove_dot_files
@@ -948,13 +967,41 @@ install_complete() (
     fi
     local exit_code=$?
 
-    # echo_breakpoint homebrew_location "$description" "installed" 0 1
+    # echo_breakpoint exit_code "$description" "installed" 0 1
 
     if [[ $exit_code -ne 0 ]]; then
       echo_error "Installing $description with Homebrew failed"
       exit 1
     elif [ "$quiet" != true ]; then
       echo_success "$description installed"
+    fi
+  }
+
+  # Opens Libre Office to generate $libre_office_macros_filepath
+  open_libre_office() {
+    local description="Libre Office"
+
+    local libre_office_open_cmd="/Applications/LibreOffice.app/Contents/MacOS/soffice --writer &"
+    if [ "$quiet" != true ]; then
+      echo "$libre Opening $description to generate file structure"$txtrst
+    fi
+
+    if [ "$debug" == true ]; then
+      echo_var libre_office_open_cmd
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $libre_office_open_cmd
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "opened" 0 1
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_error "Opening $description"
+      exit 1
+    elif [ "$quiet" != true ]; then
+      echo_success "$description opened"
     fi
   }
 
@@ -977,6 +1024,7 @@ install_complete() (
     fi
 
     install_libre_office
+    open_libre_office
   fi
 
   if [ "$quiet" != true ]; then
