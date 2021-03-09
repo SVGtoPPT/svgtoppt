@@ -666,7 +666,6 @@ if [ "$debug" == true ]; then
   printf $bldcyn"\n# LIBRE OFFICE\n"$txtrst
   echo_var stop_creations
   echo_var application_config_file_filepath
-  echo_var libre_office_cmd
 
   printf $bldcyn"\n# OUTPUT\n"$txtrst
   echo_var output_directory
@@ -676,7 +675,6 @@ if [ "$debug" == true ]; then
   echo_var ppt_filepath
   echo_var force_ppt
   echo_var where_to_open
-  echo_var open_cmd
 
   # Uncomment for intense debugging
   # comm -13 <(printf %s "$before") <(set -o posix; set | sort | uniq)

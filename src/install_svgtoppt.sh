@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # APPLICATION CONFIG VALUES
-version=1.0.0-beta2
+version=1.0.0-beta3
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -115,7 +115,7 @@ echo_breakpoint() {
 
   echo_debug "$2 not $3" "$3"
   local input
-  read input
+  read -r input
 
   case $input in
     "0") eval "$var_name"="$4" ;;
@@ -293,7 +293,7 @@ install_basic() (
         printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
 
         local input
-        read input
+        read -r input
 
         case $input in
           "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
@@ -353,7 +353,7 @@ install_basic() (
         printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
 
         local input
-        read input
+        read -r input
         case $input in
           "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
           "1") exit 1 ;;
@@ -400,7 +400,7 @@ install_basic() (
         printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
 
         local input
-        read input
+        read -r input
         case $input in
           "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
           "1") exit 1 ;;
@@ -967,13 +967,41 @@ install_complete() (
     fi
     local exit_code=$?
 
-    # echo_breakpoint homebrew_location "$description" "installed" 0 1
+    # echo_breakpoint exit_code "$description" "installed" 0 1
 
     if [[ $exit_code -ne 0 ]]; then
       echo_error "Installing $description with Homebrew failed"
       exit 1
     elif [ "$quiet" != true ]; then
       echo_success "$description installed"
+    fi
+  }
+
+  # Opens Libre Office to generate $libre_office_macros_filepath
+  open_libre_office() {
+    local description="Libre Office"
+
+    local libre_office_open_cmd="/Applications/LibreOffice.app/Contents/MacOS/soffice --writer &"
+    if [ "$quiet" != true ]; then
+      echo "$libre Opening $description to generate file structure"$txtrst
+    fi
+
+    if [ "$debug" == true ]; then
+      echo_var libre_office_open_cmd
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $libre_office_open_cmd
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "opened" 0 1
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_error "Opening $description"
+      exit 1
+    elif [ "$quiet" != true ]; then
+      echo_success "$description opened"
     fi
   }
 
@@ -996,6 +1024,7 @@ install_complete() (
     fi
 
     install_libre_office
+    open_libre_office
   fi
 
   if [ "$quiet" != true ]; then
