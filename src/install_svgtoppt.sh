@@ -419,11 +419,7 @@ install_basic() (
       echo "$octo Fetching $description from GitHub"
     fi
 
-    if [[ "$version" == *"-SNAPSHOT" ]]; then
-      local remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/latest.zip"
-    else
-      local remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
-    fi
+    local remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
 
     if [ "$debug" == true ]; then
       echo_var remote_url
@@ -873,6 +869,10 @@ install_basic() (
   validate_application_directory_missing
   validate_bash_script_missing
   validate_libre_office_macro_template_missing
+
+  if [[ "$version" == *"-SNAPSHOT" ]]; then
+    version='latest'
+  fi
 
   fetch_application_zip
   unzip_application_zip
