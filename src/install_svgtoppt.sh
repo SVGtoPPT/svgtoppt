@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # APPLICATION CONFIG VALUES
-version=1.0.0
+version=1.0.1-SNAPSHOT
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
@@ -290,16 +290,9 @@ install_basic() (
     if [[ $exit_code -eq 1 ]]; then
       if [ "$reinstall" != true ]; then
         echo_already_exists "$description" $application_directory
-        printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
-
-        local input
-        read -r input
-
-        case $input in
-          "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
-          "1") exit 1 ;;
-        esac
+        echo "Please delete and run install again OR run install with reinstall flag (-r)"
         echo
+        exit 1
       fi
 
       local remove_directory="$rm -rf $application_directory"
@@ -350,15 +343,9 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       if [ "$reinstall" != true ]; then
         echo_already_exists "$description" $bash_script_filepath
-        printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
-
-        local input
-        read -r input
-        case $input in
-          "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
-          "1") exit 1 ;;
-        esac
+        echo "Please delete and run install again OR run install with reinstall flag (-r)"
         echo
+        exit 1
       fi
 
       local remove_directory="$rm $bash_script_filepath"
@@ -397,15 +384,9 @@ install_basic() (
     if [[ $exit_code -ne 0 ]]; then
       if [ "$reinstall" != true ]; then
         echo_already_exists "$description" $libre_office_macro_template_filepath
-        printf $bldylw"0 to DELETE & RE-CREATE it$txtrst or "$bldred"1 to EXIT$txtrst: "
-
-        local input
-        read -r input
-        case $input in
-          "0") echo "$trash Moving forward with delete & re-creation of $description" ;;
-          "1") exit 1 ;;
-        esac
+        echo "Please delete and run install again OR run install with reinstall flag (-r)"
         echo
+        exit 1
       fi
 
       local remove_file="$rm $libre_office_macro_template_filepath"
