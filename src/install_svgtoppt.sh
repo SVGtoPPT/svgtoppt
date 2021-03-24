@@ -419,10 +419,14 @@ install_basic() (
       echo "$octo Fetching $description from GitHub"
     fi
 
-    remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
+    if [[ "$version" == *"-SNAPSHOT" ]]; then
+      local remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/latest.zip"
+    else
+      local remote_url="https://github.com/SVGtoPPT/svgtoppt/archive/$version.zip"
+    fi
 
     if [ "$debug" == true ]; then
-      echo_var unzip
+      echo_var remote_url
     fi
 
     local fetch_remote="$curl -sL $remote_url > \"$application_zip_file\""
