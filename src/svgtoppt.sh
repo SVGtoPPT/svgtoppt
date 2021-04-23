@@ -50,7 +50,6 @@ print_text_options() {
 # print_text_options
 
 # EMOJIS
-brew='🍺'
 checkmark='✅'
 exclamation='❗️'
 libre='📄'
@@ -126,6 +125,7 @@ find_path() {
 }
 
 # Basic commands
+brew=$(find_path brew)
 cat=$(find_path cat)
 cp=$(find_path cp)
 curl=$(find_path curl)
@@ -137,16 +137,16 @@ main() {
     # Check if SVG file exists or if it's a directory
     if [ ! -z "$first_parameter" ] && test -f $first_parameter; then
       svg_filepath=$first_parameter
-    elif test -f $input; then
-      svg_filepath=$input
-    elif test -f $PWD/$input; then
-      svg_filepath=$PWD/$input
-    elif [ ! -z "$first_parameter" ] && [ -d $first_parameter ]; then
-      svg_directory=$first_parameter
-    elif [ -d $input ]; then
-      svg_directory=$input
-    elif [ -d $PWD/$input ]; then
-      svg_directory=$PWD/$input
+    elif test -f "$input"; then
+      svg_filepath="$input"
+    elif test -f "$PWD/$input"; then
+      svg_filepath="$PWD/$input"
+    elif [ ! -z "$first_parameter" ] && [ -d "$first_parameter" ]; then
+      svg_directory="$first_parameter"
+    elif [ -d "$input" ]; then
+      svg_directory="$input"
+    elif [ -d "$PWD/$input" ]; then
+      svg_directory="$PWD/$input"
     else
       echo_failed "find input file/directory: $input"
       exit 2
@@ -244,15 +244,15 @@ main() {
 
     ppt_filepath=$output_directory/$ppt_name$ppt_file_ext
 
-    if [ "$force_ppt" != true ] && [ -f $ppt_filepath ]; then
-      while [ -f $ppt_filepath ]; do
+    if [ "$force_ppt" != true ] && [ -f "$ppt_filepath" ]; then
+      while [ -f "$ppt_filepath" ]; do
         if [ -z "$ppt_name_suffix" ]; then
           ppt_name_suffix=-1
         else
           ppt_name_suffix=$((ppt_name_suffix - 1))
         fi
 
-        ppt_filepath=$output_directory/$ppt_name$ppt_name_suffix$ppt_file_ext
+        ppt_filepath="$output_directory/$ppt_name$ppt_name_suffix$ppt_file_ext"
       done
 
       if [ "$stop_creations" != true ] && [ "$quiet" != true ]; then
@@ -375,14 +375,14 @@ main() {
   open_ppt() {
     local description="new PPT file"
 
-    local open_cmd="open -a $where_to_open $ppt_filepath"
+    local open_cmd="open -a \"$where_to_open\" \"$ppt_filepath\""
 
     if [ "$debug" == true ]; then
       echo_var open_cmd
     fi
 
     if [ "$stop_creations" != true ]; then
-      eval $open_cmd
+      eval "$open_cmd"
     fi
     local exit_code=$?
 
@@ -548,7 +548,8 @@ whichapp() {
 validate_libre_office_installed() {
   local description="Libre Office"
 
-  IFS=' ' read -r brew_path string <<<"$(brew info libreoffice | sed -n '3p')"
+  local brew_command="$brew info libreoffice"
+  IFS=' ' read -r brew_path string <<<"$($brew_command | sed -n '3p')"
   libre_office_location=$(whichapp "LibreOffice" || printf $brew_path)
 
   if [ -z "$libre_office_location" ]; then
