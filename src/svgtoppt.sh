@@ -299,7 +299,7 @@ main() {
     local description="Libre Office macro"
 
     if [ -z "$svg_filepaths" ]; then
-      svg_filepaths=$svg_filepath
+      svg_filepaths="$quote_string$svg_filepath$quote_string"
     fi
 
     local svg_sed="$sed -i '' \"s|SVG_FILEPATHS|$svg_filepaths|\" \"$libre_office_macro_filepath\""
