@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # APPLICATION CONFIG VALUES
-version=1.0.2-SNAPSHOT
+version=1.0.2
 application_name=svgtoppt
 application_directory=$PWD/$application_name
 application_config_file=$application_name
