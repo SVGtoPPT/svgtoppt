@@ -135,8 +135,14 @@ sed=$(find_path sed)
 main() {
   validate_inputs() {
     # Check if SVG file exists or if it's a directory
-    if [ ! -z "$first_parameter" ] && test -f $first_parameter; then
-      svg_filepath=$first_parameter
+    if [ ! -z "$first_parameter" ] && [ -f "$first_parameter" ]; then
+      # Check if / is included to indicate a path
+      if [[ "$first_parameter" == */* ]]; then
+        svg_filepath=$first_parameter
+      else
+        # Add path if not included
+        svg_filepath="$PWD/$first_parameter"
+      fi
     elif test -f "$input"; then
       svg_filepath="$input"
     elif test -f "$PWD/$input"; then
@@ -206,6 +212,7 @@ main() {
       for i in "$svg_directory"/*
       do
         # echo $i
+
         if [[ "$i" == *"$svg_file_ext" ]]; then
           if [ "$first" == true ]; then
             first=false
@@ -214,13 +221,11 @@ main() {
           fi
 
           svg_filepaths="$svg_filepaths$quote_string$file_uri_prefix$i$quote_string"
-        # else
-        #   echo "Not an SVG: $i"
         fi
       done
     fi
 
-    echo_var svg_filepaths
+    # echo_var svg_filepaths
   }
 
   # Figures out the name of the PPT file based on $force_ppt and existing PPT files
@@ -294,12 +299,41 @@ main() {
     fi
   }
 
+  # Overwrite macro name for Libre Office
+  update_macro_script_name() {
+    local description="Libre Office macro"
+
+    local svg_sed="$sed -i '' \"s|SVGtoPPTtemplate|SVGtoPPT|\" \"$libre_office_macro_filepath\""
+    if [ "$debug" == true ]; then
+      echo_var svg_sed
+    fi
+
+    if [ "$stop_creations" != true ]; then
+      eval $svg_sed
+    fi
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "updated" 1 0
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_failed "update $description"
+      exit 1
+    elif [ "$quiet" != true ]; then
+      echo_success "$description updated"
+    fi
+  }
+
   # Write filepath of SVG to macro for Libre Office to read
   update_macro_with_svg() {
     local description="Libre Office macro"
 
     if [ -z "$svg_filepaths" ]; then
       svg_filepaths="$quote_string$svg_filepath$quote_string"
+    fi
+
+    if [ "$debug" == true ]; then
+      echo_var svg_filepath
+      echo_var svg_filepaths
     fi
 
     local svg_sed="$sed -i '' \"s|SVG_FILEPATHS|$svg_filepaths|\" \"$libre_office_macro_filepath\""
@@ -423,6 +457,7 @@ main() {
   determine_ppt_name
 
   create_macro_from_template
+  update_macro_script_name
   update_macro_with_svg
   update_macro_with_ppt
 
@@ -594,6 +629,7 @@ validate_libre_office_macro_template_exists() {
   else
     local found=1
   fi
+
   # echo_breakpoint found "$description" "found" 1 0
 
   if [[ $found -ne 0 ]]; then
@@ -602,10 +638,68 @@ validate_libre_office_macro_template_exists() {
   fi
 }
 
+validate_libre_office_libraries_file_exists() {
+  local description="Libre Office libraries file"
+
+  local target="$libre_office_libraries_file_filepath"
+
+  if test -f "$target"; then
+    local found=0
+  else
+    local found=1
+  fi
+  exit_code=$?
+
+  # echo_breakpoint exit_code "$description" "found" 1 0
+
+  if [[ $exit_code -ne 0 ]]; then
+    echo_failed "find $description: $target"
+    exit 1
+  fi
+}
+
+validate_line_matches_or_update() {
+  local sed_cmd="sed -n '$1p' \"$libre_office_libraries_file_filepath\""
+
+  # echo_var sed_cmd
+
+  local line=$(eval $sed_cmd)
+
+  # echo_var line
+
+  if [ "$line" != "$2" ]; then
+    sed -i '' "$1i\\
+$2
+" "$libre_office_libraries_file_filepath"
+
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "added" 1 0
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo_failed "added $3"
+      exit 1
+    elif [ "$quiet" != true ]; then
+      echo_success "$3 added"
+    fi
+  elif [ "$quiet" != true ]; then
+    echo_success "$3 checked"
+  fi
+}
+
+validate_libre_office_libraries_file_is_updated() {
+  local description="Libre Office libraries file"
+
+  validate_line_matches_or_update 4 " <library:element library:name=\"SVGtoPPTtemplate\"/>" "$description template entry"
+  validate_line_matches_or_update 5 " <library:element library:name=\"SVGtoPPT\"/>" "$description macro entry"
+}
+
 validate_libre_office_installed
 validate_application_config_file_exists
 validate_application_defaults_file_exists
 validate_libre_office_macro_template_exists
+validate_libre_office_libraries_file_exists
+validate_libre_office_libraries_file_is_updated
 
 source $application_config_file_filepath
 source $application_defaults_file_filepath

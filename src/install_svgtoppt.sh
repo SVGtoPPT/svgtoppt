@@ -17,8 +17,9 @@ bash_script_filepath=/usr/local/bin/$bash_script
 # LIBRE OFFICE MACRO CONFIG VALUES
 libre_office_macro_template=SVGtoPPT_template.xba
 application_support_directory="Application Support"
-libre_office_macros_filepath=~/Library/$application_support_directory/LibreOffice/4/user/basic/Standard
-libre_office_macro_template_filepath=$libre_office_macros_filepath/$libre_office_macro
+libre_office_directory=~/Library/$application_support_directory/LibreOffice/4
+libre_office_macros_directory=$libre_office_directory/user/basic/Standard
+libre_office_macro_template_filepath=$libre_office_macros_directory/$libre_office_macro_template
 
 # Included for nonvolatile debugging
 stop_creations=false
@@ -260,6 +261,67 @@ check_libre_office_installed() {
   # echo_breakpoint found "$description" "found" 0 1
 
   return $found
+}
+
+# Opens Libre Office to generate $libre_office_directory
+open_libre_office() {
+  local description="Libre Office headless"
+
+  local libre_office_open_cmd="/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --invisible --writer &"
+
+  if [ "$quiet" != true ]; then
+    echo "$libre Opening $description to generate file structure"$txtrst
+  fi
+
+  if [ "$debug" == true ]; then
+    echo_var libre_office_open_cmd
+  fi
+
+  if [ "$stop_creations" != true ]; then
+    eval $libre_office_open_cmd
+  fi
+  local exit_code=$?
+
+  # echo_breakpoint exit_code "$description" "opened" 0 1
+
+  if [[ $exit_code -ne 0 ]]; then
+    echo_error "Opening $description"
+    exit 1
+  elif [ "$quiet" != true ]; then
+    echo_success "$description opened"
+  fi
+}
+
+# Closes Libre Office to generate $libre_office_directory
+close_libre_office() {
+  local description="Libre Office headless"
+
+  # Have not found a clean way to open, setup, then close
+  # Sleeping is not a horrible approach, but there may be a better alternative
+  # This may not be long enough for slow machines
+  local libre_office_close_cmd="sleep 3; pkill soffice"
+
+  if [ "$quiet" != true ]; then
+    echo "$libre Closing $description to generate file structure"$txtrst
+  fi
+
+  if [ "$debug" == true ]; then
+    echo_var libre_office_close_cmd
+  fi
+
+  if [ "$stop_creations" != true ]; then
+    eval $libre_office_close_cmd
+  fi
+  local exit_code=$?
+
+  # echo_breakpoint exit_code "$description" "closed" 0 1
+
+  if [[ $exit_code -ne 0 ]]; then
+    echo_error "Closing $description"
+    exit 1
+  elif [ "$quiet" != true ]; then
+    echo_success "$description closed"
+  fi
 }
 
 # Creates directories and files necessary for the application to run
@@ -590,12 +652,13 @@ install_basic() (
   # Creates an "Output" directory under application directory
   create_output_directory() {
     local description="output directory"
+    local target="\"$output_directory\""
 
     if [ "$quiet" != true ]; then
       echo "$file Creating $description"
     fi
 
-    local create_directory="$mkdir $output_directory"
+    local create_directory="$mkdir $target"
     if [ "$debug" == true ]; then
       echo_var create_directory
     fi
@@ -665,12 +728,11 @@ install_basic() (
     fi
   }
 
-  # Ensures the directory where Libre Office stores macros & templates is created
+  # Ensures the directory where Libre Office stores macros & templates exists
   create_libre_office_macro_directory() {
     local description="Libre Office macro directory"
 
-    local target="\"$libre_office_macros_filepath\""
-
+    local target="\"$libre_office_macros_directory\""
 
     check_directory_missing $target "$description"
     local exit_code=$?
@@ -906,6 +968,9 @@ install_basic() (
     echo
   fi
 
+  open_libre_office
+  close_libre_office
+
   validate_application_directory_missing
   validate_bash_script_missing
   validate_libre_office_macro_template_missing
@@ -927,7 +992,10 @@ install_basic() (
   move_bash_script
   update_bash_script_access
 
+  # Note: This should not be necessary since Libre Office
+  # should have been opened for the first time by this point
   create_libre_office_macro_directory
+
   move_libre_office_macro_template
 
   update_application_config_file
@@ -1003,34 +1071,6 @@ install_complete() (
     fi
   }
 
-  # Opens Libre Office to generate $libre_office_macros_filepath
-  open_libre_office() {
-    local description="Libre Office"
-
-    local libre_office_open_cmd="/Applications/LibreOffice.app/Contents/MacOS/soffice --writer &"
-    if [ "$quiet" != true ]; then
-      echo "$libre Opening $description to generate file structure"$txtrst
-    fi
-
-    if [ "$debug" == true ]; then
-      echo_var libre_office_open_cmd
-    fi
-
-    if [ "$stop_creations" != true ]; then
-      eval $libre_office_open_cmd
-    fi
-    local exit_code=$?
-
-    # echo_breakpoint exit_code "$description" "opened" 0 1
-
-    if [[ $exit_code -ne 0 ]]; then
-      echo_error "Opening $description"
-      exit 1
-    elif [ "$quiet" != true ]; then
-      echo_success "$description opened"
-    fi
-  }
-
   if [ "$quiet" != true ]; then
     echo_bold "$svg Starting complete installation of SVGtoPPT"
     echo
@@ -1050,7 +1090,6 @@ install_complete() (
     fi
 
     install_libre_office
-    open_libre_office
   fi
 
   if [ "$quiet" != true ]; then
