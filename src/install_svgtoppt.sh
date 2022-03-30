@@ -282,20 +282,22 @@ install_basic() (
   validate_application_directory_missing() {
     local description="application directory"
 
-    check_directory_missing $application_directory "$description"
+    local target="\"$application_directory\""
+
+    check_directory_missing $target "$description"
     local exit_code=$?
 
     # echo_breakpoint exit_code "$description" "found" 0 1
 
     if [[ $exit_code -eq 1 ]]; then
       if [ "$reinstall" != true ]; then
-        echo_already_exists "$description" $application_directory
+        echo_already_exists "$description" $target
         echo "Please delete and run install again OR run install with reinstall flag (-r)"
         echo
         exit 1
       fi
 
-      local remove_directory="$rm -rf $application_directory"
+      local remove_directory="$rm -rf $target"
 
       if [ "$debug" == true ]; then
         echo_var remove_directory
@@ -309,7 +311,7 @@ install_basic() (
       # echo_breakpoint exit_code "$description" "removed" 1 0
 
       if [[ $exit_code -ne 0 ]]; then
-        echo_error "Deleting $description failed" $application_directory
+        echo_error "Deleting $description failed" $target
         exit 1
       elif [ "$quiet" != true ]; then
         echo_success "Existing $description deleted"
@@ -663,6 +665,44 @@ install_basic() (
     fi
   }
 
+  # Ensures the directory where Libre Office stores macros & templates is created
+  create_libre_office_macro_directory() {
+    local description="Libre Office macro directory"
+
+    local target="\"$libre_office_macros_filepath\""
+
+
+    check_directory_missing $target "$description"
+    local exit_code=$?
+
+    # echo_breakpoint exit_code "$description" "found" 0 1
+
+    if [[ $exit_code -eq 0 ]]; then
+      if [ "$quiet" != true ]; then
+        echo "$file Creating $description"
+      fi
+
+      local create_directory="$mkdir -p $target"
+      if [ "$debug" == true ]; then
+        echo_var create_directory
+      fi
+
+      if [ "$stop_creations" != true ]; then
+        eval $create_directory
+      fi
+      local exit_code=$?
+
+      # echo_breakpoint exit_code "$description" "created" 1 0
+
+      if [[ $exit_code -ne 0 ]]; then
+        echo_failed "create $description"
+        exit 1
+      elif [ "$quiet" != true ]; then
+        echo_success "$description created"
+      fi
+    fi
+  }
+
   # Moves the Libre Office macro template file into Libre Office's file structure
   move_libre_office_macro_template() {
     local description="Libre Office macro"
@@ -887,6 +927,7 @@ install_basic() (
   move_bash_script
   update_bash_script_access
 
+  create_libre_office_macro_directory
   move_libre_office_macro_template
 
   update_application_config_file
