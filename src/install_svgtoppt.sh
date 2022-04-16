@@ -15,7 +15,7 @@ bash_script=svgtoppt
 bash_script_filepath=/usr/local/bin/$bash_script
 
 # LIBRE OFFICE MACRO CONFIG VALUES
-libre_office_macro_template=SVGtoPPT_template.xba
+libre_office_macro_template=SVGtoPPTtemplate.xba
 application_support_directory="Application Support"
 libre_office_directory=~/Library/$application_support_directory/LibreOffice/4
 libre_office_macros_directory=$libre_office_directory/user/basic/Standard

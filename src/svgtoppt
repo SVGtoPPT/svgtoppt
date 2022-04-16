@@ -5,7 +5,7 @@ libre_office_macros_directory=~/Library/$application_support_directory/LibreOffi
 libre_office_libraries_file=script.xlb
 libre_office_libraries_file_filepath=$libre_office_macros_directory/$libre_office_libraries_file
 
-libre_office_macro_template=SVGtoPPT_template.xba
+libre_office_macro_template=SVGtoPPTtemplate.xba
 libre_office_macro_template_filepath=$libre_office_macros_directory/$libre_office_macro_template
 
 libre_office_macro=SVGtoPPT
